@@ -1,24 +1,32 @@
-$svrip="192.168.2.181";
-$netshare="user-user2";
-$user="user2";
-$passwd="user2";
+$svrip="%s";
+$netshare="%s";
+$user="%s";
+$passwd="%s";
 net use | Select-String -Pattern "^OK" | Select-String  -Pattern $svrip | Select-String -Pattern $netshare | Tee-Object -Variable ttobj | Out-Null;
-if ($ttobj.length -gt 0) {
+$ttval="";
+if ($ttobj) {
+    $ttval=$ttobj.ToString();    
     Write-Host "run ok 0" ;
     exit(0);
 }
+
 Write-Host "no \\$svrip\$netshare";
-$ttobj;
 
 net use |  Select-String -Pattern $svrip |Tee-Object -Variable ttobj | Out-Null;
+$ttval="";
+if ($ttobj) {
+    $ttval=$ttobj.ToString();
+}
 
-if ($ttobj.length -gt 0) {
+if ($ttval.length -gt 0) {
     # now we delete all the things we need
+    $i = 0;
     foreach($c in $ttobj) {
         $s = $c -replace "\s+"," ";
         $arr = $s.split(" ");
-        Write-Host "["$arr[1]"]";
-        net use $arr[1] /delete;
+        Write-Host "[$i]=["$arr[1]"]";
+        net use $arr[1] /delete /Y; 
+        $i ++;
     }
 }
 $chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ";

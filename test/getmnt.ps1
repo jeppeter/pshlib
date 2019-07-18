@@ -1,12 +1,18 @@
-$svrip="192.168.2.181";
-$netshare="user-user2";
-$user="user2";
-$passwd="user2";
+$svrip="%s";
+$netshare="%s";
+$user="%s";
+$passwd="%s";
 
 $chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 net use | Select-String -Pattern "^OK" | Select-String  -Pattern $svrip | Select-String -Pattern $netshare | Tee-Object -Variable ttobj | Out-Null;
-if ($ttobj.length -gt 0) {
+
+$ttval="";
+if ($ttobj) {
+    $ttval=$ttobj.ToString();
+    Write-Host "ttval[$ttval]";
+}
+if ($ttval.length -gt 0) {
     $s = $ttobj -replace "\s+", " ";
     $arr = $s.split(" ");
     $cv = $arr[1].ToUpper();
@@ -15,11 +21,13 @@ if ($ttobj.length -gt 0) {
         $cg = $chars[$i];
         $cg += ":";
         if ($cg.equals($cv)) {
-            exit($i);
+            Write-Host "get [$cg]";
+            exit($i + 1);
         }
         $i ++;
     }
 }
 
+Write-Host "ttobj["$ttobj"]";
 
 exit(255);
