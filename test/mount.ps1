@@ -18,19 +18,45 @@ if ($ttobj) {
     $ttval=$ttobj.ToString();
 }
 
+$ccaa = "new","old";
+[System.Collections.ArrayList]$shares =$ccaa;
+[System.Collections.ArrayList]$disk =$ccaa;
+$shares.Remove("new");
+$shares.Remove("old");
+$disk.Remove("new");
+$disk.Remove("old");
+
+
 if ($ttval.length -gt 0) {
     # now we delete all the things we need
     $i = 0;
     foreach($c in $ttobj) {
         $s = $c -replace "\s+"," ";
         $arr = $s.split(" ");
-        if ($arr[2] -match "-" ) {
-            Write-Host "[$i]=["$arr[1]"]";
-            net use $arr[1] /delete /Y;
+        if (-Not ($arr[2] -match "-")) {
+            Write-Host "add ["$arr[2]"] ["$arr[1]"]";
+            $shares.Add($arr[2]);
+            $disk.Add($arr[1]);
         }
+        Write-Host "[$i]=["$arr[1]"]";
+        net use $arr[1] /delete /Y;
         $i ++;
     }
 }
+
+
+$i=0;
+foreach($c in $shares) {
+    $n = $shares[$i];
+    $d = $disk[$i];
+    net use $d $n  /user:$user $passwd;
+    if (-Not $?) {
+        Write-Host "can not mount [$n] on [$d] error";
+    }
+    $i ++;
+}
+
+
 $chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 $i = 3;
 while ($i -lt 26) {
