@@ -37,7 +37,7 @@ while ($i -lt 26) {
     $c += ":";
     Write-Host "c [$c]";
     Write-Host "net use $c \\$svrip\$netshare /user:$user $passwd";
-    net use $c \\$svrip\$netshare /user:$user $passwd;
+    net use $c \\$svrip\$netshare /user:$user $passwd /persistent:no;
     if ($?) {
         exit(0);
     }
