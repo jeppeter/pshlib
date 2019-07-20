@@ -3,7 +3,11 @@
 function match
 {
     Param([string]$restr,[string]$instr);
-    Write-Host "match call restr[$restr] instr[$instr]";
+    if ($instr -match $restr) {
+        Write-Host "[$instr] match [$restr]" ;
+    } else {
+        Write-Host "[$instr] not match [$instr]";
+    }
     return;
 }
 

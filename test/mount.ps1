@@ -24,8 +24,10 @@ if ($ttval.length -gt 0) {
     foreach($c in $ttobj) {
         $s = $c -replace "\s+"," ";
         $arr = $s.split(" ");
-        Write-Host "[$i]=["$arr[1]"]";
-        net use $arr[1] /delete /Y; 
+        if ($arr[2] -match "-" ) {
+            Write-Host "[$i]=["$arr[1]"]";
+            net use $arr[1] /delete /Y;
+        }
         $i ++;
     }
 }
