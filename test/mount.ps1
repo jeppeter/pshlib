@@ -67,7 +67,7 @@ $i=0;
 foreach($c in $shares) {
     $n = $shares[$i];
     $d = $disk[$i];
-    net use $d $n  /user:$user $passwd /persistent:yes /savecred;
+    net use $d $n  /user:$user $passwd /persistent:yes;
     if (-Not $?) {
         Write-Host "can not mount [$n] on [$d] error";
     }
