@@ -5,10 +5,28 @@ $passwd="%s";
 net use | Select-String -Pattern "^OK" | Select-String  -Pattern $svrip | Select-String -Pattern $netshare | Tee-Object -Variable ttobj | Out-Null;
 $ttval="";
 if ($ttobj) {
-    $ttval=$ttobj.ToString();    
+    $ttval=$ttobj.ToString();
     Write-Host "run ok 0" ;
     exit(0);
 }
+
+# first to try mount ,if success ,no umount any other 
+# if failed ,just remount
+$chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+$i = 3;
+while ($i -lt 26) {
+    $mntlabel = $chars[$i];
+    $c = "$mntlabel";
+    $c += ":";
+    Write-Host "c [$c]";
+    Write-Host "net use $c \\$svrip\$netshare /user:$user $passwd";
+    net use $c \\$svrip\$netshare /user:$user $passwd /persistent:no;
+    if ($?) {
+        exit(0);
+    }
+    $i++;
+}
+
 
 Write-Host "no \\$svrip\$netshare";
 
@@ -49,7 +67,7 @@ $i=0;
 foreach($c in $shares) {
     $n = $shares[$i];
     $d = $disk[$i];
-    net use $d $n  /user:$user $passwd;
+    net use $d $n  /user:$user $passwd /persistent:yes /savecred;
     if (-Not $?) {
         Write-Host "can not mount [$n] on [$d] error";
     }
