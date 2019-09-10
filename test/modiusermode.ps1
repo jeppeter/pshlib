@@ -12,8 +12,15 @@ Param(
     $Contacts)
 
 
+
+
 if (![string]::IsNullOrEmpty($Personal)) {
     Write-Host "Personal [$Personal]";
+    $OldPersonal = $Personal;
+}
+
+if (![string]::IsNullOrEmpty($OldPersonal)) {
+    Write-Host "OldPersonal [$OldPersonal]";
 }
 
 
