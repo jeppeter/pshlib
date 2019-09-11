@@ -19,9 +19,20 @@ function set_value_global($varname,$varvalue)
     Set-Variable -Name $varname -Value $varvalue -Scope Global
 }
 
+function _copy_error($v)
+{
+    $retv = @();
+    for ($i = 0 ; $i -lt $v.Count ; $i++) {
+        $retv = $retv + $v[$i];
+    }
+    return $retv;
+}
+
+
 function remove_dir($dir)
 {
     $retval=0;
+    $olderror = _copy_error -v $Error;
     if (Test-Path -Path $dir) {
         # if the directory exists
         $Error.clear();
@@ -32,15 +43,19 @@ function remove_dir($dir)
         }
 
     }
+    $Error = _copy_error -v $olderror;
     return $retval;
 }
+
 
 function copy_dir($sourcedir,$destdir)
 {
     $ret=0;
+    $olderror = _copy_error -v $Error;
     $retval = remove_dir -dir $destdir;
     Write-Host "retval [$retval]";
     if ($retval -ne 0) {
+        $Error = _copy_error -v $olderror;
         return $retval;
     }
     $Error.clear();
@@ -59,12 +74,14 @@ function copy_dir($sourcedir,$destdir)
             $ret = 2;
         }
     }
+    $Error = _copy_error -v $olderror;
     return $ret;
 }
 
 function make_dir_safe($dir)
 {
     $ret = 0;
+    $olderror = _copy_error -v $Error;
     if (Test-Path -Path $dir) {
         $retval = remove_dir -dir $dir;
         if ($retval -ne 0) {
@@ -75,9 +92,11 @@ function make_dir_safe($dir)
     New-Item  -ItemType "directory" -Path $dir -ErrorAction SilentlyContinue;
     if ($Error.Count -gt 0) {
         write_stderr -msg "make [$dir] error`n" + ($Error | Format-List | Out-String);
+        $Error = _copy_error -v $olderror;
         return 2;
     }
 
+    $Error = _copy_error -v $olderror;
     return $ret;
 }
 
