@@ -5,6 +5,12 @@ Param(
     $Destdir)
 
 
+function write_stderr($msg)
+{
+    [Console]::Error.WriteLine.Invoke($msg);
+    return;
+}
+
 function usage_format($usagestr) {
     $retstr = "";
     if (![string]::IsNullOrEmpty($usagestr)) {
@@ -29,20 +35,40 @@ function Usage($ec,$usagestr)
     [Environment]::Exit($ec);
 }
 
+function remove_dir($dir)
+{
+    $retval=0;
+    if (Test-Path -Path $dir) {
+        # if the directory exists
+        $Error.clear();
+        Remove-Item $destdir -ErrorAction SilentlyContinue -Recurse;
+        if ($Error.Count -gt 0) {
+            write_stderr -msg ($Error | Format-List | Out-String);
+            $retval = 2;
+        }
+
+    }
+    return $retval;
+}
+
 function copy_dir($sourcedir,$destdir)
 {
     $ret=0;
+    $retval = remove_dir -dir $destdir;
+    if ($retval -ne 0) {
+        return $retval;
+    }
+    $Error.clear();
     $v = Copy-Item -Path $sourcedir -Destination $destdir -Recurse -PassThru -ErrorAction SilentlyContinue;
     for($i=0;$i -lt $Error.Count; $i++) {
         $curerr = $Error[$i];
         $vcce = ($curerr.FullyQualifiedErrorId  | Out-String) ;
         $lowervcce = $vcce.ToLower();
         if ( -Not ($lowervcce.StartsWith("copydirectoryinfoitemioerror,") -Or $lowervcce.StartsWith("directoryexist,"))) {
-            [Console]::Error.WriteLine.Invoke("[$i]"+($curerr | Out-String));
+            write_stderr -msg "[$i]"+($curerr | Out-String) ;
             $ret = 2;
         }
     }
-
     return $ret;
 }
 
