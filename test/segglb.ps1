@@ -1,5 +1,3 @@
-# ParamTest.ps1 - Show some parameter features
-# Param statement must be first non-comment, non-blank line in the script
 Param(
     $Personal,
     $Desktop,
@@ -10,7 +8,6 @@ Param(
     $Downloads,
     $SavedGames,
     $Contacts)
-
 
 function get_value_global($varname)
 {
@@ -23,19 +20,22 @@ function set_value_global($varname,$varvalue)
     Set-Variable -Name $varname -Value $varvalue -Scope Global
 }
 
-
-
-
-if (![string]::IsNullOrEmpty($Personal)) {
-    Write-Host "Personal [$Personal]";
-    $OldPersonal = $Personal;
-}
-
-if (![string]::IsNullOrEmpty($OldPersonal)) {
-    Write-Host "OldPersonal [$OldPersonal]";
+function DebugValue($varname)
+{
+    $v = get_value_global -varname $varname;
+    Write-Host "[$varname]=[$v]";
 }
 
 
+$global:Var1="Var1Value";
+$global:Var2="Var2Value";
 
 
+DebugValue -varname "Var1";
+DebugValue -varname "Var2";
 
+set_value_global -varname "Var1" -varvalue "Var1Changed";
+set_value_global -varname "Var2" -varvalue "Var2Changed";
+
+DebugValue -varname "Var1";
+DebugValue -varname "Var2";
