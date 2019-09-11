@@ -1,19 +1,19 @@
 Param(
     $RegPath,
-    $KeyName)
+    $KeyName,
+    $KeyValue)
 
 
-function get_reg_value($path,$key)
+function set_reg_value($path,$key,$value)
 {
-    $retval="";
-    $kv = Get-ItemProperty -Path $path -Name $key -ErrorAction SilentlyContinue;
-    if ($Error.Count -eq 0) {
-        $retval = $kv.$key.ToString();
-    } else {
+    $retval=0;
+    $kv = Set-ItemProperty -Path $path -Name $key  -Value $value -ErrorAction SilentlyContinue;
+    if ($Error.Count -gt 0) {
         [Console]::Error.WriteLine.Invoke(($Error| Format-List | Out-String));
+        $retval=2;
     }
     return $retval;
 }
 
-$v = get_reg_value -path $RegPath -key $KeyName;
-Write-Host "get [$RegPath].[$KeyName]=[$v]";
+$v = set_reg_value -path $RegPath -key $KeyName -value $KeyValue;
+Write-Host "set [$RegPath].[$KeyName]=[$KeyValue] [$v]";
