@@ -31,14 +31,19 @@ function Usage($ec,$usagestr)
 
 function copy_dir($sourcedir,$destdir)
 {
+    $ret=0;
     $v = Copy-Item -Path $sourcedir -Destination $destdir -Recurse -PassThru -ErrorAction SilentlyContinue;
-    $vs = ($Error[0] | Get-Member | Out-String);
-    $ve = ($Error[0].FullyQualifiedErrorId | Out-String);
-    $s = ($Error | Format-Table | Out-String);
-    Write-Host "vs [$vs]";
-    Write-Host "s [$s]";
-    Write-Host "ve [$ve]";
+    for($i=0;$i -lt $Error.Count; $i++) {
+        $curerr = $Error[$i];
+        $vcce = ($curerr.FullyQualifiedErrorId  | Out-String) ;
+        $lowervcce = $vcce.ToLower();
+        if ( -Not ($lowervcce.StartsWith("copydirectoryinfoitemioerror,") -Or $lowervcce.StartsWith("directoryexist,"))) {
+            [Console]::Error.WriteLine.Invoke("[$i]"+($curerr | Out-String));
+            $ret = 2;
+        }
+    }
 
+    return $ret;
 }
 
 if ([string]::IsNullOrEmpty($Sourcedir) -Or [string]::IsNullOrEmpty($Destdir)) {
