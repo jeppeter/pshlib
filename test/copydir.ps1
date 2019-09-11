@@ -29,6 +29,20 @@ function Usage($ec,$usagestr)
     [Environment]::Exit($ec);
 }
 
+function copy_dir($sourcedir,$destdir)
+{
+    $v = Copy-Item -Path $sourcedir -Destination $destdir -Recurse -PassThru -ErrorAction SilentlyContinue;
+    $vs = ($Error[0] | Get-Member | Out-String);
+    $ve = ($Error[0].FullyQualifiedErrorId | Out-String);
+    $s = ($Error | Format-Table | Out-String);
+    Write-Host "vs [$vs]";
+    Write-Host "s [$s]";
+    Write-Host "ve [$ve]";
+
+}
+
 if ([string]::IsNullOrEmpty($Sourcedir) -Or [string]::IsNullOrEmpty($Destdir)) {
     Usage -ec 3 -usagestr "need source and dest";
 }
+
+copy_dir -sourcedir $Sourcedir -destdir $Destdir;
