@@ -1,6 +1,4 @@
-Param(
-    $Name,
-    $NewDir)
+Param($NewDir)
 
 function get_value_global($varname)
 {
@@ -285,6 +283,7 @@ function set_shell_folder_value($keyname,$value)
 }
 
 
+
 function get_user_shell_folder_value($keyname)
 {
     return get_reg_value -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -key $keyname;
@@ -299,6 +298,8 @@ function set_user_shell_folder_value($keyname,$value)
 {
     return set_reg_value -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -key $keyname -value $value;
 }
+
+
 
 function _get_shell_value_keyname($keyname)
 {
@@ -336,162 +337,188 @@ function _get_usershellval_setted_keyname($keyname)
     return $c.Replace(" ","_");
 }
 
-function backup_directory($keyname,$newdir)
+
+function get_env_value($keyname)
 {
-    write_stdout -msg "keyname [$keyname] newdir [$newdir]";
+    return get_reg_value -path "HKCU:\Environment" -key $keyname;
+}
+
+function del_env_value($keyname)
+{
+    return del_reg_value -path "HKCU:\Environment" -key $keyname;
+}
+
+function set_env_value($keyname,$value)
+{
+    return set_reg_value -path "HKCU:\Environment" -key $keyname -value $value;
+}
+
+function add_task_keyname($keyname,$dir)
+{
+    $cmdk = _get_rmtask_keyname -keyname $keyname;
+    $v = get_value_global -varname $cmdk;
+    if (-Not [string]::IsNullOrEmpty($v)) {
+        write_stderr -msg "has already set rmtask[temp] [$cmdk] [$v]";
+        return -6;
+    }
+
+    $v = add_once_task -taskname $cmdk -directory $dir;
+    if ([string]::IsNullOrEmpty($v)) {
+        return -4;
+    }
+    set_value_global -varname $cmdk -varvalue $v;
+    return 0;
+}
+
+function remove_task_keyname($keyname)
+{
+    $vn = _get_rmtask_keyname -keyname $keyname;
+    $v = get_value_global -varname $vn;
+    if (-Not [string]::IsNullOrEmpty($v)) {
+        # have set
+        $c = remove_once_task -taskname $v;
+        # we do not remove it double
+        $c = set_value_global -varname $vn -varvalue "";
+    }
+    return;
+}
+
+
+function backup_temp($newdir)
+{
     $diffed = 0;
-    $vn = _get_shellval_setted_keyname -keyname $keyname;
+    $vn = _get_shellval_setted_keyname -keyname "temp";
     $v = get_value_global -varname $vn;
     if (-Not [string]::IsNullOrEmpty($v)) {
-        write_stderr -msg "[$keyname] has already done";
-        return -2;
+        write_stderr -msg "environment [temp] has already setted";
+        return -3;
     }
 
-    $shellval = get_shell_folder_value -keyname $keyname;
-    $vn = _get_shell_value_keyname -keyname $keyname;
-    set_value_global -varname $vn -varvalue $shellval;
-    $vn = _get_shellval_setted_keyname -keyname $keyname;
-    set_value_global -varname $vn -varvalue "1";
+    $tempval = get_env_value -keyname "temp";
+    $vn = _get_shell_value_keyname -keyname "temp";
+    $c = set_value_global -varname $vn -varvalue $tempval;
+    $vn = _get_shellval_setted_keyname -keyname "temp";
+    $c = set_value_global -varname $vn -varvalue "1";
 
-    $vn = _get_usershellval_setted_keyname -keyname $keyname;
-    $v = get_value_global -varname $vn;
-    if (-Not [string]::IsNullOrEmpty($v)) {
-        write_stderr -msg "[$keyname] has already done";
-        return -2;
-    }
+    $tmpval = get_env_value -keyname "tmp";
+    $vn = _get_shellval_setted_keyname -keyname "tmp";
+    $c = set_value_global -varname $vn -varvalue $tmpval;
+    $vn = _get_shellval_setted_keyname -keyname "tmp";
+    $c = set_value_global -varname $vn -varvalue "1";
 
-    $usershellval = get_user_shell_folder_value -keyname $keyname;
-    $vn = _get_usershell_value_keyname -keyname $keyname;
-    set_value_global -varname $vn -varvalue $usershellval;
-    $vn = _get_usershellval_setted_keyname -keyname $keyname;
-    set_value_global -varname $vn =varvalue "1";
+    $extmpval= "";
+    $extempval = "";
 
-
-    $exshellval = "";
-
-    if (-Not [string]::IsNullOrEmpty($usershellval) -And -Not [string]::IsNullOrEmpty($shellval)) {
-        $exshellval = [System.Environment]::ExpandEnvironmentVariables($shellval);
-        $exusershellval = [System.Environment]::ExpandEnvironmentVariables($usershellval);
-        if (-Not $exusershellval.Equals($exshellval)) {
-            write_stderr -msg "usershellval[$keyname][$usershellval] != shellval[$keyname][$shellval]";
-            return -3;
+    if (-Not [string]::IsNullOrEmpty($tmpval) -And -Not [string]::IsNullOrEmpty($tempval)) {
+        $extmpval = [System.Environment]::ExpandEnvironmentVariables($tmpval);
+        $extempval = [System.Environment]::ExpandEnvironmentVariables($tempval);
+        if (-Not $extmpval.Equals($extempval)) {
+            write_stderr -msg "[TMP].[$extmpval] != [TEMP].[$extempval]";
+            return -5;
         }
+    } elseif (-Not [string]::IsNullOrEmpty($tmpval)) {
+        $extmpval = [System.Environment]::ExpandEnvironmentVariables($tmpval);
+    } elseif (-Not [string]::IsNullOrEmpty($tempval)) {
+        $extmpval = [System.Environment]::ExpandEnvironmentVariables($tempval);
+    }
 
-        write_stdout -msg "exshellval [$exshellval] newdir [$newdir]";
-        if (-Not $exshellval.Equals($newdir)) {
-            $cmdk = _get_rmtask_keyname -keyname $keyname;
-            $v = get_value_global -varname $cmdk;
-            if (-Not [string]::IsNullOrEmpty($v)) {
-                write_stderr -msg "rmtask [$keyname] already set";
-                return -4;
+    if (-Not [string]::IsNullOrEmpty($extmpval)) {
+        if (-Not $newdir.Equals($extmpval)) {
+            # now we should give the compare
+            $retval = add_task_keyname -keyname "temp" -dir $extmpval;
+            if ($retval -lt 0) {
+                return $retval;
             }
 
-            $v = add_once_task -taskname $cmdk -directory $exshellval;
-            if ([string]::IsNullOrEmpty($v)) {
-                return -5;
-            }
-            set_value_global -varname $cmdk -varvalue $v;            
-        }
-
-    } elseif (-Not [string]::IsNullOrEmpty($usershellval) -Or -Not [string]::IsNullOrEmpty($shellval)) {
-        write_stderr -msg "usershellval[$keyname][$usershellval] != shellval[$keyname][$shellval]";
-        return -2;
-    }
-
-
-    # now we should copy the directory
-    if ([string]::IsNullOrEmpty($exshellval)) {
-        $retval = make_dir_safe -dir $newdir;        
-        if ($retval -ne 0) {
-            return -3;
-        }
-        $diffed = 1;
-    } else {
-        if(-Not $exshellval.Equals($newdir)) {
-            $retval = copy_dir_top -srcdir $exshellval -dstdir $newdir;
+            $retval = copy_dir_top -srcdir $extmpval -dstdir $newdir;
             if ($retval -lt 0) {
                 return -3;
             }
             $diffed = 1;
-        }        
+        }
+    } else {
+        $retval = remove_dir -dir $newdir;
+        if ($retval -ne 0) {
+            return -5;
+        }
+        $retval = make_dir_safe -dir $newdir;
+        if ($retval -ne 0) {
+            return -6;
+        }
+        $diffed = 1;
     }
 
     if ($diffed) {
-        $vn = _get_newdir_keyname -keyname $keyname;
+        $vn = _get_newdir_keyname -keyname "temp";
         set_value_global -varname $vn -varvalue $newdir;
 
-        $retval = set_shell_folder_value -keyname $keyname -value $newdir;
+        $retval = set_env_value -keyname "temp" -value $newdir;
         if ($retval -ne 0) {
             return -6;
         }
 
-        $retval = set_user_shell_folder_value -keyname $keyname -value $newdir;
+        $retval = set_env_value -keyname "tmp" -value $newdir;
         if ($retval -ne 0) {
             return -7;
-        }        
+        }
     }
 
 
     return $diffed;
 }
 
-function restore_directory($keyname)
-{
-    # first to get the taskname 
-    $vn = _get_rmtask_keyname -keyname $keyname;
-    $v = get_value_global -varname $vn;
-    if (-Not [string]::IsNullOrEmpty($v)) {
-        # have set
-        remove_once_task -taskname $v;
-        # we do not remove it double
-        set_value_global -varname $vn -varvalue "";
-    }
 
-    $vn = _get_shellval_setted_keyname -keyname $keyname;
+function restore_temp()
+{
+
+    $c = remove_task_keyname -keyname "temp";
+
+    $vn = _get_shellval_setted_keyname -keyname "temp";
     $v = get_value_global -varname $vn;
     if (-Not [string]::IsNullOrEmpty($v)) {
         # have setted
-        $vn = _get_shell_value_keyname -keyname $keyname;
+        $vn = _get_shell_value_keyname -keyname "temp";
         $v = get_value_global -varname $vn;
         if ([string]::IsNullOrEmpty($v)) {
-            del_shell_folder_value -keyname $keyname;
+            del_env_value -keyname "temp";
         } else {
-            set_shell_folder_value -keyname $keyname -value $v;
+            set_env_value -keyname "temp" -value $v;
         }
-        $vn = _get_shellval_setted_keyname -keyname $keyname;
-        set_value_global -varname $vn -varvalue "";
-    }
-
-    $vn = _get_usershellval_setted_keyname -keyname $keyname;
-    $v = get_value_global -varname $vn;
-    if (-Not [string]::IsNullOrEmpty($v)) {
-        $vn = _get_usershell_value_keyname -keyname $keyname;
-        $v = get_value_global -varname $vn;
-        if ([string]::IsNullOrEmpty($v)) {
-            del_user_shell_folder_value -keyname $keyname;
-        } else {
-            set_user_shell_folder_value -keyname $keyname -value $v;
-        }
-        $vn = _get_usershellval_setted_keyname -keyname $keyname;
+        $vn = _get_shellval_setted_keyname -keyname "temp";
         set_value_global -varname $vn -varvalue "";
     }
 
 
-    # now to make new directory
-    $vn = _get_newdir_keyname -keyname $keyname;
+    $vn = _get_shellval_setted_keyname -keyname "tmp";
     $v = get_value_global -varname $vn;
     if (-Not [string]::IsNullOrEmpty($v)) {
-        $v = remove_dir -dir $v;
-        $v = set_value_global -varname $vn -varvalue "";
+        # have setted
+        $vn = _get_shell_value_keyname -keyname "tmp";
+        $v = get_value_global -varname $vn;
+        if ([string]::IsNullOrEmpty($v)) {
+            del_env_value -keyname "tmp";
+        } else {
+            set_env_value -keyname "tmp" -value $v;
+        }
+        $vn = _get_shellval_setted_keyname -keyname "tmp";
+        set_value_global -varname $vn -varvalue "";
+    }
+
+    $vn = _get_newdir_keyname -keyname "temp";
+    $v = get_value_global -varname $vn;
+    if (-Not [string]::IsNullOrEmpty($v)) {
+        $c = remove_dir -dir $v;
+        $c = set_value_global -varname $vn -varvalue "";
     }
     return;
 }
 
-$retval = backup_directory -keyname $Name -newdir $NewDir;
+$retval = backup_temp -newdir $NewDir;
+
 if ($retval -lt 0) {
-    restore_directory -keyname $Name;
+    restore_temp;
 }
 
-Write-Host "total ret[$retval]";
+Write-Host "[temp]total ret[$retval]";
 
 [Environment]::Exit($retval);

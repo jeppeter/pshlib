@@ -302,32 +302,38 @@ function set_user_shell_folder_value($keyname,$value)
 
 function _get_shell_value_keyname($keyname)
 {
-    return "shell_value_{0}" -f $keyname;
+    $c = "shell_value_{0}" -f $keyname;
+    return $c.Replace(" ","_");
 }
 
 function _get_usershell_value_keyname($keyname)
 {
-    return "usershell_value_{0}" -f $keyname;
+    $c = "usershell_value_{0}" -f $keyname;
+    return $c.Replace(" ","_");
 }
 
 function _get_rmtask_keyname($keyname)
 {
-    return "rmtask_name_{0}" -f $keyname;
+    $c = "rmtask_name_{0}" -f $keyname;
+    return $c.Replace(" ","_");
 }
 
 function _get_newdir_keyname($keyname)
 {
-    return "newdir_{0}" -f $keyname;
+    $c = "newdir_{0}" -f $keyname;
+    return $c.Replace(" ","_");
 }
 
 function _get_shellval_setted_keyname($keyname)
 {
-    return "shellval_setted_{0}" -f $keyname;
+    $c = "shellval_setted_{0}" -f $keyname;
+    return $c.Replace(" ","_");
 }
 
 function _get_usershellval_setted_keyname($keyname)
 {
-    return "usershellval_setted_{0}" -f $keyname;
+    $c = "usershellval_setted_{0}" -f $keyname;
+    return $c.Replace(" ","_");
 }
 
 function backup_spec($keyname,$itemname,$newdir)
