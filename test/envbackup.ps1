@@ -35,10 +35,7 @@ function set_value_global($varname,$varvalue)
 function write_stderr($msg)
 {
     [Console]::Error.WriteLine.Invoke($msg);
-    #$f = get_value_global -varname "globa_append_file";
     if (-Not [string]::IsNullOrEmpty($FileAppend)) {
-    #if (-Not [string]::IsNullOrEmpty($f)) {
-        #$msg | Out-File -FilePath $f -Append -ErrorAction SilentlyContinue ;
         $msg | Out-File -FilePath $FileAppend -Append -ErrorAction SilentlyContinue ;
     }
     return;
@@ -47,10 +44,7 @@ function write_stderr($msg)
 function write_stdout($msg)
 {
     [Console]::Out.WriteLine.Invoke($msg);
-    #$f = get_value_global -varname "globa_append_file";
     if (-Not [string]::IsNullOrEmpty($FileAppend)) {
-    #if (-Not [string]::IsNullOrEmpty($f)) {
-        #$msg | Out-File -FilePath $f -Append -ErrorAction SilentlyContinue ;
         $msg | Out-File -FilePath $FileAppend -Append -ErrorAction SilentlyContinue ;
     }
     return;
@@ -142,22 +136,20 @@ function copy_dir_recur($basedir,$curitem,$newargv)
     #$c = ($curitem | Format-List | Out-String);
     #write_stdout -msg $c;
     if (-Not (Test-Path -Path $newargv)) {
-        write_stdout -msg "create [$newargv]";
         $retval = make_dir_safe -dir $newargv;
         if ($retval -ne 0) {
             return -1;
         }
         $cnt ++;
     }
-    write_stdout -msg "name [0] [$basedir] [$newargv]";
+
     if (-Not $curitem.Name) {
         return $cnt;
     }
-    write_stdout -msg "name [1] [$basedir] [$newargv]";
     if ($curitem.Name.Equals(".") -Or $curitem.Name.Equals("..")) {
         return $cnt;
     }
-    write_stdout -msg "name [3] [$basedir] [$newargv]";
+
     $name = $curitem.Name;
     write_stdout -msg "[$basedir] new [$name]";
     $wholepath = Join-Path -Path $basedir -ChildPath $name;
@@ -214,7 +206,6 @@ function handle_directory_callback($function,$dir,$argv)
 
 function copy_dir_top($srcdir,$dstdir)
 {
-    write_stdout -msg "srcdir[$srcdir]=>[$dstdir]";
     if (-Not (Test-Path -Path $srcdir -PathType Container)) {
         return -1;
     }
@@ -275,23 +266,17 @@ function del_reg_value($path,$key)
 
 function set_runonce_task($taskname,$taskvalue)
 {
-    write_stdout -msg "set_runonce_task 1";
     $v = get_reg_value -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce" -key $taskname;
-    write_stdout -msg "set_runonce_task 2";
     if (-Not [string]::IsNullOrEmpty($v)) {
-        write_stdout -msg "set_runonce_task 3";
         write_stderr -msg "[$TaskName] has already";
         $v = "";
     } else {
-        write_stdout -msg "set_runonce_task 4";
         $retval = set_reg_value -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce" -key $taskname -value $taskvalue;
-        write_stdout -msg "set_runonce_task 5";
         if ($retval -eq 0) {
             $v = $taskname;
         } else {
             $v = "";
         }
-        write_stdout -msg "set_runonce_task 6";
     }
     return $v;
 }
@@ -299,7 +284,6 @@ function set_runonce_task($taskname,$taskvalue)
 function add_once_task($taskname,$directory)
 {
     $taskvalue = "cmd.exe /c `"rmdir /s /q `"{0}`"`"" -f $directory;
-    write_stdout -msg "[$taskname]add [$taskvalue]";
     return set_runonce_task -taskname $taskname -taskvalue $taskvalue;
 }
 
@@ -717,7 +701,6 @@ function backup_directory($keyname,$newdir)
         return -2;
     }
 
-    write_stdout -msg "directory 0";
 
     $shellval = get_shell_folder_value -keyname $keyname;
     $vn = _get_shell_value_keyname -keyname $keyname;
@@ -725,7 +708,6 @@ function backup_directory($keyname,$newdir)
     $vn = _get_shellval_setted_keyname -keyname $keyname;
     set_value_global -varname $vn -varvalue "1";
 
-    write_stdout -msg "directory 1";
     $vn = _get_usershellval_setted_keyname -keyname $keyname;
     $v = get_value_global -varname $vn;
     if (-Not [string]::IsNullOrEmpty($v)) {
@@ -733,19 +715,16 @@ function backup_directory($keyname,$newdir)
         return -2;
     }
 
-    write_stdout -msg "directory 2";
     $usershellval = get_user_shell_folder_value -keyname $keyname;
     $vn = _get_usershell_value_keyname -keyname $keyname;
     set_value_global -varname $vn -varvalue $usershellval;
     $vn = _get_usershellval_setted_keyname -keyname $keyname;
     set_value_global -varname $vn =varvalue "1";
 
-    write_stdout -msg "directory 3";
 
     $exshellval = "";
 
     if (-Not [string]::IsNullOrEmpty($usershellval) -And -Not [string]::IsNullOrEmpty($shellval)) {
-        write_stdout -msg "directory 4";
         $exshellval = [System.Environment]::ExpandEnvironmentVariables($shellval);
         $exusershellval = [System.Environment]::ExpandEnvironmentVariables($usershellval);
         if (-Not $exusershellval.Equals($exshellval)) {
@@ -753,7 +732,6 @@ function backup_directory($keyname,$newdir)
             return -3;
         }
 
-        write_stdout -msg "directory 5";
         write_stdout -msg "exshellval [$exshellval] newdir [$newdir]";
         if (-Not $exshellval.Equals($newdir)) {
             $cmdk = _get_rmtask_keyname -keyname $keyname;
@@ -763,19 +741,14 @@ function backup_directory($keyname,$newdir)
                 return -4;
             }
 
-            write_stdout -msg "directory 51";
             $v = add_once_task -taskname $cmdk -directory $exshellval;
             if ([string]::IsNullOrEmpty($v)) {
                 return -5;
             }
-            write_stdout -msg "directory 52";
             set_value_global -varname $cmdk -varvalue $v;
-            write_stdout -msg "directory 53";
         }
-        write_stdout -msg "directory 6";
 
     } elseif (-Not [string]::IsNullOrEmpty($usershellval) -Or -Not [string]::IsNullOrEmpty($shellval)) {
-        write_stdout -msg "directory 7";
         write_stderr -msg "usershellval[$keyname][$usershellval] != shellval[$keyname][$shellval]";
         return -2;
     }
@@ -783,7 +756,6 @@ function backup_directory($keyname,$newdir)
 
     # now we should copy the directory
     if ([string]::IsNullOrEmpty($exshellval)) {
-        write_stdout -msg "directory 8";
         $retval = make_dir_safe -dir $newdir;        
         if ($retval -ne 0) {
             return -3;
@@ -791,7 +763,6 @@ function backup_directory($keyname,$newdir)
         $diffed = 1;
     } else {
         if(-Not $exshellval.Equals($newdir)) {
-            write_stdout -msg "directory 9";
             $retval = copy_dir_top -srcdir $exshellval -dstdir $newdir;
             if ($retval -lt 0) {
                 return -3;
@@ -801,24 +772,19 @@ function backup_directory($keyname,$newdir)
     }
 
     if ($diffed) {
-        write_stdout -msg "directory 10";
         $vn = _get_newdir_keyname -keyname $keyname;
         set_value_global -varname $vn -varvalue $newdir;
 
-        write_stdout -msg "directory 11";
         $retval = set_shell_folder_value -keyname $keyname -value $newdir;
         if ($retval -ne 0) {
             return -6;
         }
 
-        write_stdout -msg "directory 12";
         $retval = set_user_shell_folder_value -keyname $keyname -value $newdir;
         if ($retval -ne 0) {
             return -7;
         }        
     }
-
-    write_stdout -msg "directory 13";
 
     return $diffed;
 }
@@ -877,10 +843,8 @@ function restore_directory($keyname)
 
 $errorcode=0;
 $diffed=0;
-write_stdout -msg "call in envbackup";
 
 if ($errorcode -eq 0 -And -Not [string]::IsNullOrEmpty($Personal)) {
-    write_stdout -msg "call Personal";
     $retval = backup_directory -keyname "Personal" -newdir $Personal;
     if ($retval -lt 0) {
         write_stderr -msg "error On Personal[$Personal]";
