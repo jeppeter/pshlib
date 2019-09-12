@@ -8,16 +8,24 @@ function get_value_global($varname)
     return $v;
 }
 
+function set_value_global($varname,$varvalue)
+{
+    Set-Variable -Name $varname -Value $varvalue -Scope Global
+}
+
+
 function write_stderr($msg)
 {
     [Console]::Error.WriteLine.Invoke($msg);
     return;
 }
 
-function set_value_global($varname,$varvalue)
+function write_stdout($msg)
 {
-    Set-Variable -Name $varname -Value $varvalue -Scope Global
+    [Console]::Out.WriteLine.Invoke($msg);
+    return;
 }
+
 
 function _copy_error($v)
 {
@@ -27,7 +35,6 @@ function _copy_error($v)
     }
     return $retv;
 }
-
 
 function remove_dir($dir)
 {
@@ -48,36 +55,6 @@ function remove_dir($dir)
 }
 
 
-function copy_dir($sourcedir,$destdir)
-{
-    $ret=0;
-    $olderror = _copy_error -v $Error;
-    $retval = remove_dir -dir $destdir;
-    Write-Host "retval [$retval]";
-    if ($retval -ne 0) {
-        $Error = _copy_error -v $olderror;
-        return $retval;
-    }
-    $Error.clear();
-    Write-Host "Error count [" + $Error.Count + "]";
-    $v = Copy-Item -Path $sourcedir -Destination $destdir -Recurse -ErrorAction SilentlyContinue;
-    Write-Host "[$sourcedir] => [$destdir] [" + $Error.Count  +"]";
-    Write-Host ($Error | Format-Table | Out-String);
-    for($i=0;$i -lt $Error.Count; $i++) {
-        $curerr = $Error[$i];
-        $curfmt = ($curerr | Format-Table | Out-String);
-        $vcce = ($curerr.FullyQualifiedErrorId  | Out-String) ;
-        $lowervcce = $vcce.ToLower();
-        write_stderr -msg "[$i] error `$lowervcce [$lowervcce]" + ($curerr | Out-String);
-        if ( -Not ($lowervcce.StartsWith("copydirectoryinfoitemioerror,") -Or $lowervcce.StartsWith("directoryexist,") -Or $lowervcce.length -eq 0)) {
-            write_stderr -msg "[$i]"+ $curfmt ;
-            $ret = 2;
-        }
-    }
-    $Error = _copy_error -v $olderror;
-    return $ret;
-}
-
 function make_dir_safe($dir)
 {
     $ret = 0;
@@ -89,7 +66,7 @@ function make_dir_safe($dir)
         }
     }
     $Error.clear();
-    New-Item  -ItemType "directory" -Path $dir -ErrorAction SilentlyContinue;
+    $n = New-Item  -ItemType "directory" -Path $dir -ErrorAction SilentlyContinue;
     if ($Error.Count -gt 0) {
         write_stderr -msg "make [$dir] error`n" + ($Error | Format-List | Out-String);
         $Error = _copy_error -v $olderror;
@@ -100,6 +77,121 @@ function make_dir_safe($dir)
     return $ret;
 }
 
+
+
+function get_child_items($dir)
+{
+    $olderror = _copy_error -v $Error;
+    $Error.clear();
+    $retval = Get-ChildItem -Path $dir -ErrorAction SilentlyContinue -Force;
+    if ($Error.Count -gt 0) {
+        for($i=0;$i -lt $Error.Count;$i ++) {
+            $vs = ($curerr | Out-String);
+            $curerr = $Error[$i];
+            $vcce = ($curerr.FullyQualifiedErrorId  | Out-String);
+            $lowervcce = $vcce.ToLower();
+            write_stderr -msg "[$i]------------------access [$dir]";
+            if (-Not $lowervcce.StartsWith("dirunauthorizedaccesserror,")) {
+                write_stderr -msg "[$i]------------------";
+                write_stderr -msg $vs;
+                write_stderr -msg "++++++++++++++++++++++";
+            }
+        }
+    }
+
+    $Error = _copy_error -v $olderror;
+    return $retval;
+}
+
+function copy_dir_recur($basedir,$curitem,$newargv)
+{
+    $cnt = 0;
+    if (-Not $curitem) {
+        return $cnt;
+    }
+    #$c = ($curitem | Format-List | Out-String);
+    #write_stdout -msg $c;
+    if (-Not (Test-Path -Path $newargv)) {
+        write_stdout -msg "create [$newargv]";
+        $retval = make_dir_safe -dir $newargv;
+        if ($retval -ne 0) {
+            return -1;
+        }
+        $cnt ++;
+    }
+    if (-Not $curitem.Name) {
+        return $cnt;
+    }
+    if ($curitem.Name.Equals(".") -Or $curitem.Name.Equals("..")) {
+        return $cnt;
+    }
+    $name = $curitem.Name;
+    write_stdout -msg "[$basedir] new [$name]";
+    $wholepath = Join-Path -Path $basedir -ChildPath $name;
+    if (Test-Path -Path $wholepath -PathType container) {
+        write_stdout -msg "[$wholepath] is dir newargv[$newargv]";
+        $newdir = Join-Path -Path $newargv -ChildPath $name;
+        $retval = handle_directory_callback ${function:\copy_dir_recur} -dir $wholepath -argv  $newdir;
+        if ($retval -lt 0) {
+            return $retval;
+        }
+    } else {
+        write_stdout -msg "[$wholepath] is not dir newargv[$newargv]";
+        $srcfile = Join-Path -Path $basedir -ChildPath $name;
+        $dstfile = Join-Path -Path $newargv -ChildPath $name;
+        $olderror = _copy_error -v $Error;
+        write_stdout -msg "[$srcfile]=>[$dstfile]";
+        $Error.clear();
+        $v = Copy-Item -Path $srcfile -Destination $dstfile -Recurse -ErrorAction SilentlyContinue;
+        if ($Error.Count -gt 0) {
+            for ($i=0 ; $i -lt $Error.Count ;$i++) {
+                write_stderr -msg "[$i]-----------($srcfile) => ($dstfile)";
+                write_stderr -msg ($Error[$i] | Out-String);
+            }
+        } else {
+            $cnt ++;
+        }
+
+        $Error = _copy_error -v $olderror;
+    }
+    return $cnt;
+}
+
+
+function handle_directory_callback($function,$dir,$argv)
+{
+    $retval = 0;
+    $cnt = 0;
+
+    $olderror = _copy_error -v $Error;
+
+    $items =  get_child_items($dir);
+
+    foreach($i in $items) {
+        $ret = Invoke-Command $function -ArgumentList $dir,$i,$argv;
+        if ($ret -lt 0) {            
+            return $ret;
+        }
+        $cnt += $ret;
+    }
+
+    $Error = _copy_error -v $olderror;
+    return $cnt;
+}
+
+function copy_dir_top($srcdir,$dstdir)
+{
+    if (-Not (Test-Path -Path $srcdir -PathType Container)) {
+        return -1;
+    }
+    if (-Not (Test-Path -Path $dstdir -PathType Container)) {
+        $retval = make_dir_safe -dir $dstdir;
+        if ($retval -ne 0) {
+            return -2;
+        }
+    }
+    return handle_directory_callback ${function:\copy_dir_recur} -dir $srcdir -argv  $dstdir;
+}
 
 function set_reg_value($path,$key,$value)
 {
@@ -240,12 +332,13 @@ function _get_usershellval_setted_keyname($keyname)
 
 function backup_directory($keyname,$newdir)
 {
-
+    write_stdout -msg "keyname [$keyname] newdir [$newdir]";
+    $diffed = 0;
     $vn = _get_shellval_setted_keyname -keyname $keyname;
     $v = get_value_global -varname $vn;
     if (-Not [string]::IsNullOrEmpty($v)) {
         write_stderr -msg "[$keyname] has already done";
-        return 2;
+        return -2;
     }
 
     $shellval = get_shell_folder_value -keyname $keyname;
@@ -258,7 +351,7 @@ function backup_directory($keyname,$newdir)
     $v = get_value_global -varname $vn;
     if (-Not [string]::IsNullOrEmpty($v)) {
         write_stderr -msg "[$keyname] has already done";
-        return 2;
+        return -2;
     }
 
     $usershellval = get_user_shell_folder_value -keyname $keyname;
@@ -275,64 +368,63 @@ function backup_directory($keyname,$newdir)
         $exusershellval = [System.Environment]::ExpandEnvironmentVariables($usershellval);
         if (-Not $exusershellval.Equals($exshellval)) {
             write_stderr -msg "usershellval[$keyname][$usershellval] != shellval[$keyname][$shellval]";
-            return 3;
+            return -3;
         }
-        $cmdk = _get_rmtask_keyname -keyname $keyname;
-        $v = get_value_global -varname $cmdk;
-        if (-Not [string]::IsNullOrEmpty($v)) {
-            write_stderr -msg "rmtask [$keyname] already set";
-            return 4;
-        }
+        if (-Not $exshellval.Equals($newdir)) {
+            $cmdk = _get_rmtask_keyname -keyname $keyname;
+            $v = get_value_global -varname $cmdk;
+            if (-Not [string]::IsNullOrEmpty($v)) {
+                write_stderr -msg "rmtask [$keyname] already set";
+                return -4;
+            }
 
-        $v = add_once_task -taskname $cmdk -directory $exshellval;
-        if ([string]::IsNullOrEmpty($v)) {
-            return 5;
+            $v = add_once_task -taskname $cmdk -directory $exshellval;
+            if ([string]::IsNullOrEmpty($v)) {
+                return -5;
+            }
+            set_value_global -varname $cmdk -varvalue $v;            
         }
-        set_value_global -varname $cmdk -varvalue $v;
 
     } elseif (-Not [string]::IsNullOrEmpty($usershellval) -Or -Not [string]::IsNullOrEmpty($shellval)) {
         write_stderr -msg "usershellval[$keyname][$usershellval] != shellval[$keyname][$shellval]";
-        return 2;
+        return -2;
     }
 
-    Write-Host "call 1";
 
     # now we should copy the directory
     if ([string]::IsNullOrEmpty($exshellval)) {
-        Write-Host "call 11";        
-        $retval = make_dir_safe -dir $newdir;
-        Write-Host "call 12";
+        $retval = make_dir_safe -dir $newdir;        
+        if ($retval -ne 0) {
+            return -3;
+        }
+        $diffed = 1;
     } else {
-        Write-Host "call 13";
-        $retval = copy_dir -sourcedir $exshellval -destdir $newdir;
-        Write-Host "call 14";
+        if(-Not $exshellval.Equals($newdir)) {
+            $retval = copy_dir_top -srcdir $exshellval -destdir $newdir;
+            if ($retval -ne 0) {
+                return 3;
+            }
+            $diffed = 1;
+        }        
     }
 
-    Write-Host "call 1 retval[$retval]";
-    if ($retval -ne 0) {
-        return $retval;
-    }
+    if ($diffed) {
+        $vn = _get_newdir_keyname -keyname $keyname;
+        set_value_global -varname $vn -varvalue $newdir;
 
-    Write-Host "call 2";
+        $retval = set_shell_folder_value -keyname $keyname -value $newdir;
+        if ($retval -ne 0) {
+            return -6;
+        }
 
-    $vn = _get_newdir_keyname -keyname $keyname;
-    set_value_global -varname $vn -varvalue $newdir;
-
-    $retval = set_shell_folder_value -keyname $keyname -value $newdir;
-    if ($retval -ne 0) {
-        return $retval;
-    }
-
-    Write-Host "call 3";
-
-    $retval = set_user_shell_folder_value -keyname $keyname -value $newdir;
-    if ($retval -ne 0) {
-        return $retval;
+        $retval = set_user_shell_folder_value -keyname $keyname -value $newdir;
+        if ($retval -ne 0) {
+            return -7;
+        }        
     }
 
 
-    Write-Host "call 4";
-    return 0;
+    return $diffed;
 }
 
 function restore_directory($keyname)
@@ -387,8 +479,8 @@ function restore_directory($keyname)
     return;
 }
 
-$retval = backup_directory -keyname $Name -NewDir $newdir;
-if ($retval -ne 0) {
+$retval = backup_directory -keyname $Name -newdir $NewDir;
+if ($retval -lt 0) {
     restore_directory -keyname $Name;
 }
 

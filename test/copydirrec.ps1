@@ -1,20 +1,6 @@
-# for source dir
-
 Param(
     $Sourcedir,
-    $Destdir)
-
-
-function get_value_global($varname)
-{
-    $v = Get-Variable -Name $varname -ValueOnly -Scope Global -ErrorAction SilentlyContinue; 
-    return $v;
-}
-
-function set_value_global($varname,$varvalue)
-{
-    Set-Variable -Name $varname -Value $varvalue -Scope Global
-}
+    $Destdir);
 
 
 function write_stderr($msg)
@@ -182,50 +168,8 @@ function handle_directory_callback($function,$dir,$argv)
     return $cnt;
 }
 
-function copy_dir_top($srcdir,$dstdir)
-{
-    if (-Not (Test-Path -Path $srcdir -PathType Container)) {
-        return -1;
-    }
-    if (-Not (Test-Path -Path $dstdir -PathType Container)) {
-        $retval = make_dir_safe -dir $dstdir;
-        if ($retval -ne 0) {
-            return -2;
-        }
-    }
-    return handle_directory_callback ${function:\copy_dir_recur} -dir $srcdir -argv  $dstdir;
-}
-
-function usage_format($usagestr) {
-    $retstr = "";
-    if (![string]::IsNullOrEmpty($usagestr)) {
-        $retstr += $usagestr;
-        $retstr += "`n";
-    }
-
-    $retstr += "copydir sourcedir destdir`n";
-    Write-Host "retstr`n[$retstr]";
-
-    return $retstr;
-}
-
-function Usage($ec,$usagestr)
-{
-    $v = usage_format -usagestr $usagestr;
-    $func = [Console]::Error.WriteLine;
-    if ($ec -eq 0) {
-        $func = [Console].WriteLine;
-    } 
-    $func.Invoke($v);    
-    [Environment]::Exit($ec);
-}
 
 
-if ([string]::IsNullOrEmpty($Sourcedir) -Or [string]::IsNullOrEmpty($Destdir)) {
-    Usage -ec 3 -usagestr "need source and dest";
-}
-
-$retval  = copy_dir_top -srcdir $Sourcedir -dstdir  $Destdir;
+$retval = handle_directory_callback ${function:\copy_dir_recur} -dir $Sourcedir -argv  $Destdir;
 
 
-Write-Host "retval [$retval]";
