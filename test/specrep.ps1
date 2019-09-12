@@ -481,11 +481,22 @@ function restore_spec($keyname,$itemname)
 $setitem="";
 
 Set-Variable DOWNLOAD_ITEM_NAME -option Constant -Value "{374DE290-123F-4565-9164-39C4925E467B}";
-
+Set-Variable SAVED_GAME_ITEM_NAME -option Constant -Value "{4C5C32FF-BB9D-43B0-B5B4-2D72E54EAAA4}";
+Set-Variable CONTACTS_ITEM_NAME -option Constant -Value "{56784854-C6CB-462B-8169-88E350ACB882}";
+Set-Variable SEARCH_ITEM_NAME -option Constant -Value "{7D1D3A04-DEBB-4115-95CF-2F29DA2920DA}";
+Set-Variable LINK_ITEM_NAME -option Constant -Value "{BFB9D5E0-C6A9-404C-B2B2-AE6DB6AF4968}";
 
 
 if ($Name.Equals("download")) {
     $setitem=$DOWNLOAD_ITEM_NAME;
+} elseif ($Name.Equals("savedgame")) {
+    $setitem=$SAVED_GAME_ITEM_NAME;
+} elseif ($Name.Equals("contacts")) {
+    $setitem=$CONTACTS_ITEM_NAME;
+} elseif ($Name.Equals("search")) {
+    $setitem=$SEARCH_ITEM_NAME;
+} elseif ($Name.Equals("link")) {
+    $setitem=$LINK_ITEM_NAME;
 }
 
 
