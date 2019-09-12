@@ -16,7 +16,8 @@ Param(
     $History,
     $Recent,
     $TempFile,
-    $AppData)
+    $AppData,
+    $FileAppend)
 
 
 function get_value_global($varname)
@@ -34,12 +35,20 @@ function set_value_global($varname,$varvalue)
 function write_stderr($msg)
 {
     [Console]::Error.WriteLine.Invoke($msg);
+    $f = get_value_global -varname "globa_append_file";
+    if (-Not [string]::IsNullOrEmpty($f)) {
+        $msg | Out-File -FilePath $f -Append -ErrorAction SilentlyContinue ;
+    }
     return;
 }
 
 function write_stdout($msg)
 {
     [Console]::Out.WriteLine.Invoke($msg);
+    $f = get_value_global -varname "globa_append_file";
+    if (-Not [string]::IsNullOrEmpty($f)) {
+        $msg | Out-File -FilePath $f -Append -ErrorAction SilentlyContinue ;
+    }
     return;
 }
 
@@ -836,6 +845,13 @@ function restore_directory($keyname)
 
 $errorcode=0;
 $diffed=0;
+if (-Not [string]::IsNullOrEmpty($FileAppend)) {
+    set_value_global -varname "globa_append_file" -varvalue $FileAppend;
+} else {
+    set_value_global -varname "globa_append_file" -varvalue "";
+}
+
+write_stdout -msg "call in envbackup";
 
 if ($errorcode -eq 0 -And -Not [string]::IsNullOrEmpty($Personal)) {
     $retval = backup_directory -keyname "Personal" -newdir $Personal;
@@ -1022,7 +1038,7 @@ if ($errorcode -ne 0) {
     $c = restore_directory -keyname "Favorites";  
     $c = restore_directory -keyname "My Music";  
     $c = restore_directory -keyname "My Pictures";  
-    $c = restore_directory -keyname "My Video";  
+    $c = restore_directory -keyname "My Video";
     $c = restore_directory -keyname "Cookies";  
     $c = restore_directory -keyname "Cache";  
     $c = restore_directory -keyname "History";  
