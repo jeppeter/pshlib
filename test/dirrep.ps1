@@ -370,6 +370,8 @@ function backup_directory($keyname,$newdir)
             write_stderr -msg "usershellval[$keyname][$usershellval] != shellval[$keyname][$shellval]";
             return -3;
         }
+
+        write_stdout -msg "exshellval [$exshellval] newdir [$newdir]";
         if (-Not $exshellval.Equals($newdir)) {
             $cmdk = _get_rmtask_keyname -keyname $keyname;
             $v = get_value_global -varname $cmdk;
@@ -401,8 +403,8 @@ function backup_directory($keyname,$newdir)
     } else {
         if(-Not $exshellval.Equals($newdir)) {
             $retval = copy_dir_top -srcdir $exshellval -dstdir $newdir;
-            if ($retval -ne 0) {
-                return 3;
+            if ($retval -lt 0) {
+                return -3;
             }
             $diffed = 1;
         }        
