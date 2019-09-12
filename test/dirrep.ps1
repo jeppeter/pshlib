@@ -400,7 +400,7 @@ function backup_directory($keyname,$newdir)
         $diffed = 1;
     } else {
         if(-Not $exshellval.Equals($newdir)) {
-            $retval = copy_dir_top -srcdir $exshellval -destdir $newdir;
+            $retval = copy_dir_top -srcdir $exshellval -dstdir $newdir;
             if ($retval -ne 0) {
                 return 3;
             }
