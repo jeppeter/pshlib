@@ -272,12 +272,25 @@ function set_runonce_task($taskname,$taskvalue)
         write_stderr -msg "[$TaskName] has already";
         $v = "";
     } else {
+        $olderror = _copy_error -v $Error;
+        $Error.clear();
+        $c = Get-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce";
+        if ($Error.Count -gt 0) {
+            $Error.clear();
+            $c = New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce";
+            if  ($Error.Count -gt 0) {
+                $Error = _copy_error -v $olderror;
+                return "";
+            }
+        }
+
         $retval = set_reg_value -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce" -key $taskname -value $taskvalue;
         if ($retval -eq 0) {
             $v = $taskname;
         } else {
             $v = "";
         }
+        $Error = _copy_error -v $olderror;
     }
     return $v;
 }
