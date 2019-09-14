@@ -297,7 +297,7 @@ function set_runonce_task($taskname,$taskvalue)
 
 function add_once_task($taskname,$directory)
 {
-    $taskvalue = "cmd.exe /c `"rmdir /s /q `"{0}`"`"" -f $directory;
+    $taskvalue = "cmd.exe /q /c `"rmdir /s /q `"{0}`"`"" -f $directory;
     return set_runonce_task -taskname $taskname -taskvalue $taskvalue;
 }
 
