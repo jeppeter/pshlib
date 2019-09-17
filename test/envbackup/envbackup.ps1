@@ -263,6 +263,10 @@ function del_reg_value($path,$key)
     return $retval;
 }
 
+function get_rmtask_value($keyname)
+{
+    return get_reg_value -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce" -key $taskname;    
+}
 
 
 function set_runonce_task($taskname,$taskvalue)
