@@ -8,6 +8,24 @@ function get_file_img($file)
     return [System.Drawing.Image]::Fromfile($fitem);
 }
 
+function _my_file_name()
+{
+    return $MyInvocation.ScriptName;
+}
+
+function get_current_file_dir()
+{
+# Determine script location for PowerShell
+    $curpath = _my_file_name;
+    return Split-Path $curpath;
+}
+
+function get_current_file()
+{
+    $curpath = _my_file_name;
+    return $curpath;
+}
+
 #Define Form
 $form1 = New-Object System.Windows.Forms.Form
 $form1.Text = ""
@@ -53,8 +71,8 @@ $DataGridView_ServerName.Columns[2].Name = "column2"
 $DataGridView_ServerName.Columns[3].Name = "changed"
 
 
-$wrongimg = get_file_img -file "$pwd\wrong.png";
-$rightimg = get_file_img -file "$pwd\right.png";
+$wrongimg = get_file_img -file ("{0}\wrong.png" -f (get_current_file_dir));
+$rightimg = get_file_img -file ("{0}\right.png" -f (get_current_file_dir));
 
         
 
