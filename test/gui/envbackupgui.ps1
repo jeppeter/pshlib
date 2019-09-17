@@ -57,11 +57,14 @@ function get_env_value($keyname)
     return get_reg_value -path "HKCU:\Environment" -key $keyname;
 }
 
-
 function insert_datagrid($grid,$chked,$itemname,$path,$ischanged)
 {
-
+    
 }
+
+
+
+
 
 Set-Variable DOWNLOAD_ITEM_NAME -option Constant -Value "{374DE290-123F-4565-9164-39C4925E467B}";
 Set-Variable SAVED_GAME_ITEM_NAME -option Constant -Value "{4C5C32FF-BB9D-43B0-B5B4-2D72E54EAAA4}";
