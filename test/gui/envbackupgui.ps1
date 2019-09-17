@@ -34,7 +34,7 @@ function set_datagrid_rowidx($grid,$keyname)
 }
 
 
-function insert_datagrid_common($grid,$keyname,$okimg,$wrongimg)
+function insert_datagrid_common($grid,$chked,$keyname,$okimg,$wrongimg)
 {
     $rmval = get_rmtask_value -keyname $keyname;
     $shellval = get_shell_folder_value -keyname $keyname;
@@ -44,7 +44,7 @@ function insert_datagrid_common($grid,$keyname,$okimg,$wrongimg)
         $idx = $grid.RowCount - 1;
         $grid.Rows[$idx].Cells[0].ReadOnly = $true;
     } else {
-        $grid.Rows.Add($true,$keyname,$shellval,$okimg);
+        $grid.Rows.Add($chked,$keyname,$shellval,$okimg);
         $idx = $grid.RowCount - 1;
         $grid.Rows[$idx].Cells[0].ReadOnly = $false;
     }
@@ -52,7 +52,7 @@ function insert_datagrid_common($grid,$keyname,$okimg,$wrongimg)
     return $val;
 }
 
-function insert_datagrid_spec($grid,$keyname,$itemname,$okimg,$wrongimg)
+function insert_datagrid_spec($grid,$chked,$keyname,$itemname,$okimg,$wrongimg)
 {
     $rmval = get_rmtask_value -keyname $keyname;
     $shellval = get_shell_folder_value -keyname $itemname;
@@ -62,7 +62,7 @@ function insert_datagrid_spec($grid,$keyname,$itemname,$okimg,$wrongimg)
         $idx = $grid.RowCount - 1;
         $grid.Rows[$idx].Cells[0].ReadOnly = $true;
     } else {
-        $grid.Rows.Add($true,$keyname,$shellval,$okimg);
+        $grid.Rows.Add($chked,$keyname,$shellval,$okimg);
         $idx = $grid.RowCount - 1;
         $grid.Rows[$idx].Cells[0].ReadOnly = $false;
     }
@@ -71,7 +71,7 @@ function insert_datagrid_spec($grid,$keyname,$itemname,$okimg,$wrongimg)
     return $val;
 }
 
-function insert_datagrid_env($grid,$keyname,$okimg,$wrongimg)
+function insert_datagrid_env($grid,$chked,$keyname,$okimg,$wrongimg)
 {
     $rmval = get_rmtask_value -keyname $keyname;
     $shellval = get_env_value -keyname $keyname;
@@ -81,7 +81,7 @@ function insert_datagrid_env($grid,$keyname,$okimg,$wrongimg)
         $idx = $grid.RowCount - 1;
         $grid.Rows[$idx].Cells[0].ReadOnly = $true;
     } else {
-        $grid.Rows.Add($true,$keyname,$shellval,$okimg);
+        $grid.Rows.Add($chked,$keyname,$shellval,$okimg);
         $idx = $grid.RowCount - 1;
         $grid.Rows[$idx].Cells[0].ReadOnly = $false;
     }
@@ -164,25 +164,25 @@ $rightimghdl = get_file_img -file ("{0}\right.png" -f (get_current_file_dir));
 function refresh_grid($grid,$okimg,$wrongimg) 
 {
     $grid.Rows.Clear();
-    $v = insert_datagrid_common -grid $grid -keyname "Personal" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -keyname "Desktop" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -keyname "Favorites" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -keyname "My Music" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -keyname "My Pictures" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -keyname "My Video" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -keyname "Cookies" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -keyname "Cache" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -keyname "History" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -keyname "Recent" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -keyname "AppData" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Personal" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Desktop" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Favorites" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "My Music" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "My Pictures" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "My Video" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Cookies" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Cache" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "History" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Recent" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "AppData" -okimg $okimg -wrongimg $wrongimg;
 
-    $v = insert_datagrid_spec -grid $grid -keyname "download" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_spec -grid $grid -keyname "savedgames" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_spec -grid $grid -keyname "contacts" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_spec -grid $grid -keyname "search" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_spec -grid $grid -keyname "link" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "download" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "savedgames" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "contacts" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "search" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "link" -okimg $okimg -wrongimg $wrongimg;
 
-    $v = insert_datagrid_env -grid $grid -keyname "temp" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_env -grid $grid -chked $true -keyname "temp" -okimg $okimg -wrongimg $wrongimg;
     $grid.Refresh();
     return ;
 }
