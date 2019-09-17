@@ -17,6 +17,9 @@ function write_stdout($msg)
     return;
 }
 
+
+
+
 Add-Type -AssemblyName System.Windows.Forms;
 Add-Type -AssemblyName System.drawing;
 
@@ -70,9 +73,23 @@ $backuppage.DataBindings.DefaultDataSourceUpdateMode = 0;
 $backuppage.UseVisualStyleBackColor = $True;
 $backuppage.Name = "syspagectrl";
 # this is the chinese 用户资料重定向
-$backuppage.Text = "$([char]0x7528)$([char]0x6237)$([char]0x8d44)$([char]0x6599)$([char]0x91cd)$([char]0x5b9a)$([char]0x5411)";;
+$backuppage.Text = "$([char]0x7528)$([char]0x6237)$([char]0x8d44)$([char]0x6599)$([char]0x91cd)$([char]0x5b9a)$([char]0x5411)";
 $maintabctrl.Controls.Add($backuppage);
 
+
+$datagrid = New-Object System.Windows.Forms.DataGridView;
+$datagrid_point = New-Object System.Drawing.Point;
+$datagrid_point.X = 10;
+$datagrid_point.Y = 10;
+$datagrid.Location = $datagrid_point;
+$datagrid_size = New-Object System.Drawing.Size;
+$datagrid_size.Width = 650;
+$datagrid_size.Height = 350;
+$datagrid.Size = $datagrid_size;
+$datagrid.MultiSelect = $false;
+$datagrid.ColumnHeadersVisible = $true;
+$datagrid.RowHeadersVisible = $false;
+$backuppage.Controls.Add($datagrid);
 
 
 $mainfrm.ShowDialog() | Out-Null;
