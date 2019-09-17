@@ -1,21 +1,40 @@
 
-function write_stderr($msg)
+
+
+function _my_file_name()
 {
-    [Console]::Error.WriteLine.Invoke($msg);
-    if (-Not [string]::IsNullOrEmpty($FileAppend)) {
-        $msg | Out-File -FilePath $FileAppend -Append -ErrorAction SilentlyContinue ;
-    }
-    return;
+    return $MyInvocation.ScriptName;
 }
 
-function write_stdout($msg)
+function get_current_file_dir()
 {
-    [Console]::Out.WriteLine.Invoke($msg);
-    if (-Not [string]::IsNullOrEmpty($FileAppend)) {
-        $msg | Out-File -FilePath $FileAppend -Append -ErrorAction SilentlyContinue ;
-    }
-    return;
+# Determine script location for PowerShell
+    $curpath = _my_file_name;
+    return Split-Path $curpath;
 }
+
+
+. ("{0}\valop.ps1" -f (get_current_file_dir));
+. ("{0}\fileop.ps1" -f (get_current_file_dir));
+. ("{0}\regop.ps1" -f (get_current_file_dir));
+. ("{0}\backupop.ps1" -f (get_current_file_dir));
+
+
+
+Add-Type -AssemblyName System.Windows.Forms;
+Add-Type -AssemblyName System.drawing;
+
+
+
+
+
+function get_current_file()
+{
+    $curpath = _my_file_name;
+    return $curpath;
+}
+
+
 
 function get_reg_value($path,$key)
 {
@@ -140,12 +159,6 @@ Set-Variable DEFAULT_APPDATA_DIR -option Constant -Value ("{0}\AppData\Roaming" 
 
 
 
-Add-Type -AssemblyName System.Windows.Forms;
-Add-Type -AssemblyName System.drawing;
-
-
-
-
 $mainfrm = New-Object System.Windows.Forms.Form;
 $mainfrm.Text = "idvtools 1.0";
 $mainfrm.Name = "mainframe";
@@ -210,6 +223,22 @@ $datagrid.MultiSelect = $false;
 $datagrid.ColumnHeadersVisible = $true;
 $datagrid.RowHeadersVisible = $false;
 $backuppage.Controls.Add($datagrid);
+
+$wrongimghdl = get_file_img -file ("{0}\wrong.png" -f (get_current_file_dir));
+$rightimghdl = get_file_img -file ("{0}\right.png" -f (get_current_file_dir));
+
+
+function refresh_grid($grid,$okimg,$wrongimg) 
+{
+    $grid.Rows.Clear();
+    $v = insert_datagrid_common -keyname "Personal" -okimg $okimg -wrongimg $wrongimg;
+
+
+
+
+    $grid.Refresh();
+    return ;
+}
 
 
 

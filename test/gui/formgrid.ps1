@@ -2,11 +2,6 @@
 Add-Type -AssemblyName System.Windows.Forms;
 Add-Type -AssemblyName System.drawing;
 
-function get_file_img($file)
-{
-    $fitem = (Get-Item $file);
-    return [System.Drawing.Image]::Fromfile($fitem);
-}
 
 function _my_file_name()
 {
@@ -25,6 +20,11 @@ function get_current_file()
     $curpath = _my_file_name;
     return $curpath;
 }
+
+
+. ("{0}\valop.ps1" -f (get_current_file_dir));
+. ("{0}\fileop.ps1" -f (get_current_file_dir));
+
 
 #Define Form
 $form1 = New-Object System.Windows.Forms.Form
