@@ -57,9 +57,55 @@ function get_env_value($keyname)
     return get_reg_value -path "HKCU:\Environment" -key $keyname;
 }
 
-function insert_datagrid($grid,$chked,$itemname,$path,$ischanged)
+function insert_datagrid_common($grid,$keyname,$okimg,$wrongimg)
 {
-    
+    $rmval = get_rmtask_value -keyname $keyname;
+    $shellval = get_shell_folder_value -keyname $keyname;
+    if (-Not [string]::IsNullOrEmpty($rmval)) {
+        # now this is not allow to make value
+        $grid.Rows.Add($false,$keyname,$shellval,$wrongimg);
+        $idx = $grid.RowCount - 1;
+        $grid.Rows[$idx].Cells[0].ReadOnly = $true;
+    } else {
+        $grid.Rows.Add($true,$keyname,$shellval,$okimg);
+        $idx = $grid.RowCount - 1;
+        $grid.Rows[$idx].Cells[0].ReadOnly = $false;
+    }
+    return $grid.RowCount - 1;
+}
+
+function insert_datagrid_spec($grid,$keyname,$itemname,$okimg,$wrongimg)
+{
+    $rmval = get_rmtask_value -keyname $keyname;
+    $shellval = get_shell_folder_value -keyname $itemname;
+    if (-Not [string]::IsNullOrEmpty($rmval)) {
+        # now this is not allow to make value
+        $grid.Rows.Add($false,$keyname,$shellval,$wrongimg);
+        $idx = $grid.RowCount - 1;
+        $grid.Rows[$idx].Cells[0].ReadOnly = $true;
+    } else {
+        $grid.Rows.Add($true,$keyname,$shellval,$okimg);
+        $idx = $grid.RowCount - 1;
+        $grid.Rows[$idx].Cells[0].ReadOnly = $false;
+    }
+    return $grid.RowCount - 1;
+}
+
+function insert_datagrid_env($grid,$keyname,$okimg,$wrongimg)
+{
+    $rmval = get_rmtask_value -keyname $keyname;
+    $shellval = get_env_value -keyname $keyname;
+    if (-Not [string]::IsNullOrEmpty($rmval)) {
+        # now this is not allow to make value
+        $grid.Rows.Add($false,$keyname,$shellval,$wrongimg);
+        $idx = $grid.RowCount - 1;
+        $grid.Rows[$idx].Cells[0].ReadOnly = $true;
+    } else {
+        $grid.Rows.Add($true,$keyname,$shellval,$okimg);
+        $idx = $grid.RowCount - 1;
+        $grid.Rows[$idx].Cells[0].ReadOnly = $false;
+    }
+    return $grid.RowCount - 1;
 }
 
 
@@ -164,6 +210,8 @@ $datagrid.MultiSelect = $false;
 $datagrid.ColumnHeadersVisible = $true;
 $datagrid.RowHeadersVisible = $false;
 $backuppage.Controls.Add($datagrid);
+
+
 
 
 $mainfrm.ShowDialog() | Out-Null;
