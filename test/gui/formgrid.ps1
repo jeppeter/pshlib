@@ -47,6 +47,42 @@ $DataGridView_ServerName.Width = 410
 $DataGridView_ServerName.ColumnHeadersVisible = $true
 $DataGridView_ServerName.ColumnHeadersHeight = 20 
 $DataGridView_ServerName.Enabled = $true
+
+
+$refreshbtn =  New-Object System.Windows.Forms.Button;
+$refreshbtn.Text = "refresh";
+
+$refnum = 0;
+
+function refresh_datagrid($grid) {
+
+    $global:refnum ++;
+    Write-Host "refnum [$global:refnum]";
+    if ($global:refnum -gt 1) {
+        $grid.Rows.Clear();        
+        $global:refnum = 0;
+        Write-Host "cleared data ";
+    } else {
+        $grid.Columns[0].ReadOnly = $false;
+        $grid.Columns[3].ReadOnly = $true;
+
+        #Add Rows
+        $grid.Rows.Add($false,"1", "2", $rightimg);
+        $grid.Rows.Add($true,"a", "b", $wrongimg);
+        $grid.Rows[1].Cells[0].ReadOnly = $true;
+        Write-Host "insert datas";
+    }
+    $grid.Refresh();
+    return;
+}
+
+$refresh_click = {
+    refresh_datagrid -grid $DataGridView_ServerName;
+    Write-Host "cleared";
+    return;    
+}
+$refreshbtn.Add_Click($refresh_click);
+
     
 #Add Columns
 $Column1 = New-Object System.Windows.Forms.DataGridViewTextboxColumn
@@ -74,18 +110,13 @@ $DataGridView_ServerName.Columns[3].Name = "changed"
 $wrongimg = get_file_img -file ("{0}\wrong.png" -f (get_current_file_dir));
 $rightimg = get_file_img -file ("{0}\right.png" -f (get_current_file_dir));
 
-        
+
+$refreshbtn.Location = New-Object System.Drawing.Point(200,300);
+
+refresh_datagrid -grid $DataGridView_ServerName;
 
 $form1.Controls.Add($DataGridView_ServerName);
-
-$DataGridView_ServerName.Columns[0].ReadOnly = $false;
-$DataGridView_ServerName.Columns[3].ReadOnly = $true;
-
-#Add Rows
-$DataGridView_ServerName.Rows.Add($false,"1", "2", $rightimg);
-$DataGridView_ServerName.Rows.Add($true,"a", "b", $wrongimg);
-$DataGridView_ServerName.Rows[1].Cells[0].ReadOnly = $true;
-
+$form1.Controls.Add($refreshbtn);
 
 
 
