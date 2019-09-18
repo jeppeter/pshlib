@@ -96,13 +96,21 @@ $backuppage = New-Object System.Windows.Forms.TabPage;
 
 $InitialFormWindowState = New-Object System.Windows.Forms.FormWindowState;
 
+Set-Variable MAIN_FRAME_WIDTH -option Constant -Value 700;
+Set-Variable MAIN_FRAME_HEIGHT -option Constant -Value 650;
+Set-Variable TABCTRL_WIDTH -option Constant -Value ($MAIN_FRAME_WIDTH - 25);
+Set-Variable TABCTRL_HEIGHT -option Constant -Value ($MAIN_FRAME_HEIGHT - 250);
+
+Set-Variable DATAGRID_WIDTH -option Constant -Value ($TABCTRL_WIDTH - 25);
+Set-Variable DATAGRID_HEIGHT -option Constant -Value ($TABCTRL_HEIGHT - 50 );
+
 $mainfrm_drawing_size = New-Object System.Drawing.Size;
-$mainfrm_drawing_size.Width = 700;
-$mainfrm_drawing_size.Height = 550;
+$mainfrm_drawing_size.Width = $MAIN_FRAME_WIDTH;
+$mainfrm_drawing_size.Height = $MAIN_FRAME_HEIGHT;
 $mainfrm.ClientSize = $mainfrm_drawing_size;
 $mainfrm_fixed_size = New-Object System.Drawing.Size;
-$mainfrm_fixed_size.Width = 725;
-$mainfrm_fixed_size.Height = 550;
+$mainfrm_fixed_size.Width = ($MAIN_FRAME_WIDTH + 25);
+$mainfrm_fixed_size.Height = $MAIN_FRAME_HEIGHT;
 $mainfrm.minimumSize = $mainfrm_fixed_size;
 $mainfrm.maximumSize = $mainfrm_fixed_size;
 
@@ -113,8 +121,8 @@ $tabctrl_drawing_point.Y = 20;
 $maintabctrl.Location = $tabctrl_drawing_point;
 
 $tabctrl_drawing_size = New-Object System.Drawing.Size;
-$tabctrl_drawing_size.Height = 400;
-$tabctrl_drawing_size.Width = 675;
+$tabctrl_drawing_size.Height = $TABCTRL_HEIGHT;
+$tabctrl_drawing_size.Width = $TABCTRL_WIDTH;
 $maintabctrl.Size = $tabctrl_drawing_size;
 
 $mainfrm.Controls.Add($maintabctrl);
@@ -141,8 +149,8 @@ $datagrid_point.X = 10;
 $datagrid_point.Y = 10;
 $datagrid.Location = $datagrid_point;
 $datagrid_size = New-Object System.Drawing.Size;
-$datagrid_size.Width = 650;
-$datagrid_size.Height = 350;
+$datagrid_size.Width = $DATAGRID_WIDTH;
+$datagrid_size.Height = $DATAGRID_HEIGHT;
 $datagrid.Size = $datagrid_size;
 $datagrid.MultiSelect = $false;
 $datagrid.ColumnHeadersVisible = $true;
@@ -167,7 +175,7 @@ function insert_grid_columns($grid)
 
     $colchk.Width = 40;
     $colname.Width = 80;
-    $colpath.Width = 160;
+    $colpath.Width = 430;
     $colimg.Width = 80;
 
     #$grid.ColumnHeadersVisible = $true;
