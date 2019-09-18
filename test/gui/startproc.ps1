@@ -24,9 +24,11 @@ $p = Start-Process -FilePath $cmd -Passthru -ArgumentList $params;
 $p.EnableRaisingEvents = $true;
 $msg = ($p | gm | Out-String) ;
 write_stdout -msg $msg;
+$global:proc=$p;
 
 Register-ObjectEvent -InputObject $p -EventName Exited  -SourceIdentifier $p.Exited  -Action {
-    write_stdout -msg "process exited";
+    $c = $global:proc.ExitCode;
+    write_stdout -msg "process exited[$c]";
 } | Out-Null;
 
 $cnt=0;
@@ -42,7 +44,6 @@ while ($true) {
     write_stdout -msg "wait [$cnt]";
     $cnt ++;
 }
-#$p.WaitForExit();
 
 $code = $p.ExitCode;
 write_stdout -msg "exit [$code]";
