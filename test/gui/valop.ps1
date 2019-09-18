@@ -88,3 +88,38 @@ Set-Variable DEFAULT_HISTORY_DIR -option Constant -Value ("{0}\AppData\Local\Mic
 Set-Variable DEFAULT_RECENT_DIR -option Constant -Value ("{0}\AppData\Roaming\Microsoft\Windows\Recent" -f $userprofile);
 Set-Variable DEFAULT_TEMP_DIR -option Constant -Value ("{0}\AppData\Local\Temp" -f $userprofile);
 Set-Variable DEFAULT_APPDATA_DIR -option Constant -Value ("{0}\AppData\Roaming" -f $userprofile);
+
+
+$lower_alpha_lists="abcdefghijklmnopqrstuvwxyz";
+$higher_alpha_lists="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+function get_next_char($c) {
+    if ($c -ge 'a' -And $c -le 'z') {
+        $idx = 0;
+        for($idx =0 ; $idx -lt $lower_alpha_lists.Length ;$idx ++) {
+            if ($lower_alpha_lists[$idx] -eq $c) {
+                break;
+            }
+        }
+        if ($idx -lt ($lower_alpha_lists.Length - 1)) {
+            return $lower_alpha_lists[($idx+1)];
+        } else {
+            return $lower_alpha_lists[0];
+        }
+        
+    } elseif (($c -ge 'A' -And $c -le 'Z')) {
+        $idx = 0;
+        for($idx =0 ; $idx -lt $lower_alpha_lists.Length ;$idx ++) {
+            if ($lower_alpha_lists[$idx] -eq $c) {
+                break;
+            }
+        }
+        if ($idx -lt ($higher_alpha_lists.Length - 1)) {
+            return $higher_alpha_lists[($idx+1)];
+        } else {
+            return $higher_alpha_lists[0];
+        }
+
+    } 
+    return $c;    
+}

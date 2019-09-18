@@ -180,6 +180,18 @@ $txtboxpath_drawing_point.X = 85;
 $txtboxpath_drawing_point.Y = (20 + $DATAGRID_HEIGHT + 45);
 $txtboxpath.Location = $txtboxpath_drawing_point;
 
+$curuserprofile = (Get-Item env:"USERPROFILE").Value;
+$newprofile = "";
+for ($i=0; $i -lt $curuserprofile.Length ; $i ++) {
+    $c = $curuserprofile[$i];
+    if ($i -eq 0) {
+        $newprofile = $newprofile + (get_next_char -c $c);
+    } else {
+        $newprofile = $newprofile + $c;
+    }
+}
+$txtboxpath.Text = $newprofile;
+
 $txtboxpath_drawing_size = New-Object System.Drawing.Size;
 $txtboxpath_drawing_size.Width = 450;
 $txtboxpath_drawing_size.Height = 20;
@@ -195,6 +207,17 @@ $btnpath.Location = $btnpath_drawing_point;
 
 # text 选择路径...
 $btnpath.Text = "$([char]0x9009)$([char]0x62e9)$([char]0x8def)$([char]0x5f84)...";
+
+$btnpath.Add_Click({
+   #Create OpenFileDialog object
+  $object = New-Object -comObject Shell.Application;
+  # text 选择路径
+  $folder = $object.BrowseForFolder(0, "$([char]0x9009)$([char]0x62e9)$([char]0x8def)$([char]0x5f84)", 0, "MyComputer");
+  if ($folder) {
+    $txtboxpath.Text = $folder.self.Path;
+  }
+});
+
 
 $backuppage.Controls.Add($btnpath);
 
