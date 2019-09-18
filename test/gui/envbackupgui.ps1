@@ -82,6 +82,28 @@ function insert_datagrid_env($grid,$chked,$keyname,$okimg,$wrongimg,$defval)
     return add_grid_row -grid $grid -chked $chked -keyname $keyname -shellval $shellval -img $okimg -readonly $false;   
 }
 
+function set_grid_idx_check_box($grid,$keyname,$state)
+{
+
+    if (-Not $grid.Rows[$idx].Cells[0].ReadOnly) {
+        $grid.Rows[$idx].Cells[0].Value = $state; 
+    }
+    return;
+}
+
+
+function set_grid_check_box($grid,$state)
+{
+    $rcnt = $grid.RowCount;
+    write_stdout -msg "state [$state]";
+    for ($i=0; $i -lt $rcnt ; $i++) {
+        if (-Not $grid.Rows[$i].Cells[0].ReadOnly){
+            $grid.Rows[$i].Cells[0].Value = $state;
+        }
+    }
+    return;
+}
+
 
 
 $mainfrm = New-Object System.Windows.Forms.Form;
@@ -103,6 +125,11 @@ Set-Variable TABCTRL_HEIGHT -option Constant -Value ($MAIN_FRAME_HEIGHT - 70);
 
 Set-Variable DATAGRID_WIDTH -option Constant -Value ($TABCTRL_WIDTH - 25);
 Set-Variable DATAGRID_HEIGHT -option Constant -Value ($TABCTRL_HEIGHT - 200 );
+
+Set-Variable CHECK_BOX_WIDTH  -option Constant -Value 100;
+Set-Variable CHECK_BOX_HEIGHT -option Constant -Value 20;
+Set-Variable CHECK_BOX_SPACE  -option Constant -Value 40;
+Set-Variable CHECK_BOX_LEFT_POINT -option Constant -Value 70;
 
 $mainfrm_drawing_size = New-Object System.Drawing.Size;
 $mainfrm_drawing_size.Width = $MAIN_FRAME_WIDTH;
@@ -218,8 +245,80 @@ $btnpath.Add_Click({
   }
 });
 
-
 $backuppage.Controls.Add($btnpath);
+
+$chkbox_regsetted = New-Object System.Windows.Forms.Checkbox ;
+$chkbox_regsetted_point = New-Object System.Drawing.Point;
+$chkbox_regsetted_point.X = $CHECK_BOX_LEFT_POINT;
+$chkbox_regsetted_point.Y = (20 + $DATAGRID_HEIGHT + 45 + 30);
+$chkbox_regsetted.Location = $chkbox_regsetted_point;
+
+$chkbox_regsetted_size = New-Object System.Drawing.Size;
+$chkbox_regsetted_size.Width = $CHECK_BOX_WIDTH;
+$chkbox_regsetted_size.Height = $CHECK_BOX_HEIGHT;
+$chkbox_regsetted.Size = $chkbox_regsetted_size;
+
+# text 更改目录
+$chkbox_regsetted.Text = "$([char]0x66f4)$([char]0x6539)$([char]0x76ee)$([char]0x5f55)";
+$chkbox_regsetted.Checked = $true;
+$backuppage.Controls.Add($chkbox_regsetted);
+
+
+$chkbox_copyfile = New-Object System.Windows.Forms.Checkbox ;
+$chkbox_copyfile_point = New-Object System.Drawing.Point;
+$chkbox_copyfile_point.X = ($CHECK_BOX_LEFT_POINT + $CHECK_BOX_WIDTH + $CHECK_BOX_SPACE);
+$chkbox_copyfile_point.Y = (20 + $DATAGRID_HEIGHT + 45 + 30);
+$chkbox_copyfile.Location = $chkbox_copyfile_point;
+
+$chkbox_copyfile_size = New-Object System.Drawing.Size;
+$chkbox_copyfile_size.Width = $CHECK_BOX_WIDTH;
+$chkbox_copyfile_size.Height = $CHECK_BOX_HEIGHT;
+$chkbox_copyfile.Size = $chkbox_copyfile_size;
+
+# text 数据转移
+$chkbox_copyfile.Text = "$([char]0x6570)$([char]0x636e)$([char]0x8f6c)$([char]0x79fb)";
+$chkbox_copyfile.Checked = $true;
+$backuppage.Controls.Add($chkbox_copyfile);
+
+
+$chkbox_removed = New-Object System.Windows.Forms.Checkbox ;
+$chkbox_removed_point = New-Object System.Drawing.Point;
+$chkbox_removed_point.X = ($CHECK_BOX_LEFT_POINT + $CHECK_BOX_WIDTH * 2 + $CHECK_BOX_SPACE * 2);;
+$chkbox_removed_point.Y = (20 + $DATAGRID_HEIGHT + 45 + 30);
+$chkbox_removed.Location = $chkbox_removed_point;
+
+$chkbox_removed_size = New-Object System.Drawing.Size;
+$chkbox_removed_size.Width = $CHECK_BOX_WIDTH;
+$chkbox_removed_size.Height = $CHECK_BOX_HEIGHT;
+$chkbox_removed.Size = $chkbox_removed_size;
+
+# text 清除数据
+$chkbox_removed.Text = "$([char]0x6e05)$([char]0x9664)$([char]0x6570)$([char]0x636e)";
+$chkbox_removed.Checked = $true;
+$backuppage.Controls.Add($chkbox_removed);
+
+
+$chkbox_selall = New-Object System.Windows.Forms.Checkbox ;
+$chkbox_selall_point = New-Object System.Drawing.Point;
+$chkbox_selall_point.X = ($CHECK_BOX_LEFT_POINT + $CHECK_BOX_WIDTH * 3 + $CHECK_BOX_SPACE * 3);;
+$chkbox_selall_point.Y = (20 + $DATAGRID_HEIGHT + 45 + 30);
+$chkbox_selall.Location = $chkbox_selall_point;
+
+$chkbox_selall_size = New-Object System.Drawing.Size;
+$chkbox_selall_size.Width = $CHECK_BOX_WIDTH;
+$chkbox_selall_size.Height = $CHECK_BOX_HEIGHT;
+$chkbox_selall.Size = $chkbox_selall_size;
+
+# text 选择所有
+$chkbox_selall.Text = "$([char]0x9009)$([char]0x62e9)$([char]0x6240)$([char]0x6709)";
+$chkbox_selall.Checked = $false;
+
+$chkbox_selall.Add_CheckStateChanged({
+    $v = set_grid_check_box -grid $datagrid -state $chkbox_selall.Checked;
+});
+
+$backuppage.Controls.Add($chkbox_selall);
+
 
 $wrongimghdl = get_file_img -file ("{0}\wrong.png" -f (get_current_file_dir));
 $rightimghdl = get_file_img -file ("{0}\right.png" -f (get_current_file_dir));

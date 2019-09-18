@@ -1,5 +1,5 @@
 
-function backup_temp($newdir,$copied,$removed)
+function backup_temp($newdir,$copied,$removed,$regsetted)
 {
     $diffed = 0;
     $vn = _get_shellval_setted_keyname -keyname "temp";
@@ -79,14 +79,17 @@ function backup_temp($newdir,$copied,$removed)
         $vn = _get_newdir_keyname -keyname "temp";
         set_value_global -varname $vn -varvalue $newdir;
 
-        $retval = set_env_value -keyname "temp" -value $newdir;
-        if ($retval -ne 0) {
-            return -6;
-        }
 
-        $retval = set_env_value -keyname "tmp" -value $newdir;
-        if ($retval -ne 0) {
-            return -7;
+        if ($regsetted) {
+            $retval = set_env_value -keyname "temp" -value $newdir;
+            if ($retval -ne 0) {
+                return -6;
+            }
+
+            $retval = set_env_value -keyname "tmp" -value $newdir;
+            if ($retval -ne 0) {
+                return -7;
+            }            
         }
     }
 
@@ -142,7 +145,7 @@ function restore_temp()
 
 
 
-function backup_spec($keyname,$itemname,$newdir,$copied,$removed)
+function backup_spec($keyname,$itemname,$newdir,$copied,$removed,$regsetted)
 {
     write_stdout -msg "keyname[$keyname] itemname[$itemname] newdir[$newdir]";
     $diffed = 0;
@@ -226,14 +229,16 @@ function backup_spec($keyname,$itemname,$newdir,$copied,$removed)
         $vn = _get_newdir_keyname -keyname $keyname;
         set_value_global -varname $vn -varvalue $newdir;
 
-        $retval = set_shell_folder_value -keyname $itemname -value $newdir;
-        if ($retval -ne 0) {
-            return -6;
-        }
+        if ($regsetted) {
+            $retval = set_shell_folder_value -keyname $itemname -value $newdir;
+            if ($retval -ne 0) {
+                return -6;
+            }
 
-        $retval = set_user_shell_folder_value -keyname $itemname -value $newdir;
-        if ($retval -ne 0) {
-            return -7;
+            $retval = set_user_shell_folder_value -keyname $itemname -value $newdir;
+            if ($retval -ne 0) {
+                return -7;
+            }            
         }
     }
     return $diffed;
@@ -377,15 +382,17 @@ function backup_directory($keyname,$newdir,$copied,$removed)
         $vn = _get_newdir_keyname -keyname $keyname;
         set_value_global -varname $vn -varvalue $newdir;
 
-        $retval = set_shell_folder_value -keyname $keyname -value $newdir;
-        if ($retval -ne 0) {
-            return -6;
-        }
+        if ($regsetted) {
+            $retval = set_shell_folder_value -keyname $keyname -value $newdir;
+            if ($retval -ne 0) {
+                return -6;
+            }
 
-        $retval = set_user_shell_folder_value -keyname $keyname -value $newdir;
-        if ($retval -ne 0) {
-            return -7;
-        }        
+            $retval = set_user_shell_folder_value -keyname $keyname -value $newdir;
+            if ($retval -ne 0) {
+                return -7;
+            }
+        }
     }
 
     return $diffed;
