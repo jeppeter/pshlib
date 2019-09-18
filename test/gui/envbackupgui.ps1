@@ -31,7 +31,12 @@ function set_datagrid_rowidx($grid,$keyname)
     set_value_global -varname $vn -varvalue $val;
     write_stdout -msg "insert[$keyname]idx[$val]";
     return $val;
+}
 
+function get_datagrid_rowidx($grid,$keyname)
+{
+    $vn = _get_rowidx_keyname -keyname $keyname;
+    return get_value_global -varname $vn;
 }
 
 function add_grid_row($grid,$chked,$keyname,$shellval,$img,$readonly)
@@ -82,8 +87,12 @@ function insert_datagrid_env($grid,$chked,$keyname,$okimg,$wrongimg,$defval)
     return add_grid_row -grid $grid -chked $chked -keyname $keyname -shellval $shellval -img $okimg -readonly $false;   
 }
 
-function set_grid_idx_check_box($grid,$keyname,$state)
+function set_grid_keyname_check_box($grid,$keyname,$state)
 {
+    $idx = get_datagrid_rowidx -grid $grid -keyname $keyname;
+    if ([string]::IsNullOrEmpty($idx)) {
+        return ;
+    }
 
     if (-Not $grid.Rows[$idx].Cells[0].ReadOnly) {
         $grid.Rows[$idx].Cells[0].Value = $state; 
@@ -95,12 +104,33 @@ function set_grid_idx_check_box($grid,$keyname,$state)
 function set_grid_check_box($grid,$state)
 {
     $rcnt = $grid.RowCount;
-    write_stdout -msg "state [$state]";
     for ($i=0; $i -lt $rcnt ; $i++) {
         if (-Not $grid.Rows[$i].Cells[0].ReadOnly){
             $grid.Rows[$i].Cells[0].Value = $state;
         }
     }
+    return;
+}
+
+function set_grid_default_enable($grid)
+{
+    $v = set_grid_keyname_check_box -grid $grid -keyname "Personal" -state  $true;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "Desktop" -state  $true;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "Favorites" -state  $true;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "My Music" -state  $true;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "My Pictures" -state  $true;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "My Video" -state  $true;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "download" -state  $true;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "savedgames" -state  $true;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "contacts" -state  $true;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "search" -state  $true;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "link" -state  $true;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "Cookies" -state  $false;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "Cache" -state  $false;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "History" -state  $false;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "Recent" -state  $false;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "temp" -state  $false;
+    $v = set_grid_keyname_check_box -grid $grid -keyname "AppData" -state  $false;
     return;
 }
 
@@ -372,11 +402,6 @@ function refresh_grid($grid,$okimg,$wrongimg)
     $v = insert_datagrid_common -grid $grid -chked $true -keyname "My Music" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_MYMUSIC_DIR;
     $v = insert_datagrid_common -grid $grid -chked $true -keyname "My Pictures" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_MYPIC_DIR;
     $v = insert_datagrid_common -grid $grid -chked $true -keyname "My Video" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_MYVIDEO_DIR;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Cookies" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_COOKIES_DIR;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Cache" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_CACHE_DIR;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "History" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_HISTORY_DIR;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Recent" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_RECENT_DIR;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "AppData" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_APPDATA_DIR;
 
     $v = insert_datagrid_spec -grid $grid -chked $true -keyname "download" -itemname $DOWNLOAD_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_DOWNLOADS_DIR;
     $v = insert_datagrid_spec -grid $grid -chked $true -keyname "savedgames" -itemname $SAVED_GAME_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_SAVEDGAMES_DIR;
@@ -384,7 +409,14 @@ function refresh_grid($grid,$okimg,$wrongimg)
     $v = insert_datagrid_spec -grid $grid -chked $true -keyname "search" -itemname $SEARCH_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_SEARCHES_DIR;
     $v = insert_datagrid_spec -grid $grid -chked $true -keyname "link" -itemname $LINK_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_LINKS_DIR;
 
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Cookies" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_COOKIES_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Cache" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_CACHE_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "History" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_HISTORY_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Recent" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_RECENT_DIR;
+
     $v = insert_datagrid_env -grid $grid -chked $true -keyname "temp" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_TEMP_DIR;
+
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "AppData" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_APPDATA_DIR;
 
     $grid.Refresh();
     return ;
@@ -392,6 +424,7 @@ function refresh_grid($grid,$okimg,$wrongimg)
 
 $v = insert_grid_columns -grid $datagrid;
 $v = refresh_grid -grid $datagrid -okimg $rightimghdl -wrongimg $wrongimghdl;
+$v = set_grid_default_enable -grid $datagrid;
 
 $datagrid.Refresh();
 
