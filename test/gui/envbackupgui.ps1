@@ -99,10 +99,10 @@ $InitialFormWindowState = New-Object System.Windows.Forms.FormWindowState;
 Set-Variable MAIN_FRAME_WIDTH -option Constant -Value 700;
 Set-Variable MAIN_FRAME_HEIGHT -option Constant -Value 650;
 Set-Variable TABCTRL_WIDTH -option Constant -Value ($MAIN_FRAME_WIDTH - 25);
-Set-Variable TABCTRL_HEIGHT -option Constant -Value ($MAIN_FRAME_HEIGHT - 250);
+Set-Variable TABCTRL_HEIGHT -option Constant -Value ($MAIN_FRAME_HEIGHT - 70);
 
 Set-Variable DATAGRID_WIDTH -option Constant -Value ($TABCTRL_WIDTH - 25);
-Set-Variable DATAGRID_HEIGHT -option Constant -Value ($TABCTRL_HEIGHT - 50 );
+Set-Variable DATAGRID_HEIGHT -option Constant -Value ($TABCTRL_HEIGHT - 200 );
 
 $mainfrm_drawing_size = New-Object System.Drawing.Size;
 $mainfrm_drawing_size.Width = $MAIN_FRAME_WIDTH;
@@ -158,6 +158,45 @@ $datagrid.RowHeadersVisible = $false;
 $datagrid.AllowUserToAddRows = $false;
 $datagrid.AllowUserToDeleteRows = $false;
 $backuppage.Controls.Add($datagrid);
+
+$labelpath = New-Object System.Windows.Forms.Label;
+# text 目标路径
+$labelpath.Text = "$([char]0x76ee)$([char]0x6807)$([char]0x8def)$([char]0x5f84)";
+$labelpath_drawing_point = New-Object System.Drawing.Point;
+$labelpath_drawing_point.X = (20);
+$labelpath_drawing_point.Y = (20 + $DATAGRID_HEIGHT + 50);
+$labelpath.Location = $labelpath_drawing_point;
+
+$labelpath_drawing_size = New-Object System.Drawing.Size;
+$labelpath_drawing_size.Width = 60;
+$labelpath_drawing_size.Height = 20;
+$labelpath.Size = $labelpath_drawing_size;
+
+$backuppage.Controls.Add($labelpath);
+
+$txtboxpath = New-Object System.Windows.Forms.TextBox;
+$txtboxpath_drawing_point = New-Object System.Drawing.Point;
+$txtboxpath_drawing_point.X = 85;
+$txtboxpath_drawing_point.Y = (20 + $DATAGRID_HEIGHT + 45);
+$txtboxpath.Location = $txtboxpath_drawing_point;
+
+$txtboxpath_drawing_size = New-Object System.Drawing.Size;
+$txtboxpath_drawing_size.Width = 450;
+$txtboxpath_drawing_size.Height = 20;
+$txtboxpath.Size = $txtboxpath_drawing_size;
+$backuppage.Controls.Add($txtboxpath);
+
+
+$btnpath = New-Object System.Windows.Forms.Button;
+$btnpath_drawing_point = New-Object System.Drawing.Point;
+$btnpath_drawing_point.X = 540;
+$btnpath_drawing_point.Y = (20 + $DATAGRID_HEIGHT + 45);
+$btnpath.Location = $btnpath_drawing_point;
+
+# text 选择路径...
+$btnpath.Text = "$([char]0x9009)$([char]0x62e9)$([char]0x8def)$([char]0x5f84)...";
+
+$backuppage.Controls.Add($btnpath);
 
 $wrongimghdl = get_file_img -file ("{0}\wrong.png" -f (get_current_file_dir));
 $rightimghdl = get_file_img -file ("{0}\right.png" -f (get_current_file_dir));
@@ -233,4 +272,9 @@ $v = insert_grid_columns -grid $datagrid;
 $v = refresh_grid -grid $datagrid -okimg $rightimghdl -wrongimg $wrongimghdl;
 
 $datagrid.Refresh();
+
+
+
+
+
 $mainfrm.ShowDialog() | Out-Null;
