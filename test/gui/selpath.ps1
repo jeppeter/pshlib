@@ -165,5 +165,54 @@ $chkbox_selall.Add_CheckStateChanged({
   });
 $mainfrm.Controls.Add($chkbox_selall);
 
+$btnset_default = New-Object System.Windows.Forms.Button;
+$btnset_default_point = New-Object System.Drawing.Point;
+$btnset_default_point.X = 20;
+$btnset_default_point.Y = (20 + $DATAGRID_HEIGHT + 45 + 30 + $CHECK_BOX_HEIGHT + 10);
+
+$btnset_default.Location = $btnset_default_point;
+$btnset_default_size = New-Object System.Drawing.Size;
+$btnset_default_size.Width = 100;
+$btnset_default_size.Height = 25;
+
+$btnset_default.Size = $btnset_default_size;
+# text 推荐选择
+$btnset_default.Text = "$([char]0x63a8)$([char]0x8350)$([char]0x9009)$([char]0x62e9)";
+
+$mainfrm.Controls.Add($btnset_default);
+
+$btnset_selected = New-Object System.Windows.Forms.Button;
+$btnset_selected_point = New-Object System.Drawing.Point;
+$btnset_selected_point.X = (20 + 125);
+$btnset_selected_point.Y = (20 + $DATAGRID_HEIGHT + 45 + 30 + $CHECK_BOX_HEIGHT + 10);
+
+$btnset_selected.Location = $btnset_selected_point;
+$btnset_selected_size = New-Object System.Drawing.Size;
+$btnset_selected_size.Width = 100;
+$btnset_selected_size.Height = 25;
+
+$btnset_selected.Size = $btnset_selected_size;
+# text 开始转移
+$btnset_selected.Text = "$([char]0x5f00)$([char]0x59cb)$([char]0x8f6c)$([char]0x79fb)";
+
+$mainfrm.Controls.Add($btnset_selected);
+
+
+$btnset_restore = New-Object System.Windows.Forms.Button;
+$btnset_restore_point = New-Object System.Drawing.Point;
+$btnset_restore_point.X = (20 + 125 * 2);
+$btnset_restore_point.Y = (20 + $DATAGRID_HEIGHT + 45 + 30 + $CHECK_BOX_HEIGHT + 10);
+
+$btnset_restore.Location = $btnset_restore_point;
+$btnset_restore_size = New-Object System.Drawing.Size;
+$btnset_restore_size.Width = 100;
+$btnset_restore_size.Height = 25;
+
+$btnset_restore.Size = $btnset_restore_size;
+# text 恢复默认
+$btnset_restore.Text = "$([char]0x6062)$([char]0x590d)$([char]0x9ed8)$([char]0x8ba4)";
+
+$mainfrm.Controls.Add($btnset_restore);
+
 
 $mainfrm.ShowDialog() | Out-Null;

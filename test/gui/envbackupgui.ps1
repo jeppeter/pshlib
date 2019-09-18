@@ -161,6 +161,11 @@ Set-Variable CHECK_BOX_HEIGHT -option Constant -Value 20;
 Set-Variable CHECK_BOX_SPACE  -option Constant -Value 40;
 Set-Variable CHECK_BOX_LEFT_POINT -option Constant -Value 70;
 
+Set-Variable BUTTON_GROUP_WIDTH -option Constant -Value 100;
+Set-Variable BUTTON_GROUP_HEIGHT -option Constant -Value 25;
+Set-Variable BUTTON_GROUP_SPACE -option Constant -Value 100;
+Set-Variable BUTTON_GROUP_LEFT_POINT -option Constant -Value 80;
+
 $mainfrm_drawing_size = New-Object System.Drawing.Size;
 $mainfrm_drawing_size.Width = $MAIN_FRAME_WIDTH;
 $mainfrm_drawing_size.Height = $MAIN_FRAME_HEIGHT;
@@ -350,6 +355,56 @@ $chkbox_selall.Add_CheckStateChanged({
 $backuppage.Controls.Add($chkbox_selall);
 
 
+$btnset_default = New-Object System.Windows.Forms.Button;
+$btnset_default_point = New-Object System.Drawing.Point;
+$btnset_default_point.X = $BUTTON_GROUP_LEFT_POINT;
+$btnset_default_point.Y = (20 + $DATAGRID_HEIGHT + 45 + 30 + $CHECK_BOX_HEIGHT + 20);
+
+$btnset_default.Location = $btnset_default_point;
+$btnset_default_size = New-Object System.Drawing.Size;
+$btnset_default_size.Width = $BUTTON_GROUP_WIDTH;
+$btnset_default_size.Height = $BUTTON_GROUP_HEIGHT;
+
+$btnset_default.Size = $btnset_default_size;
+# text 推荐选择
+$btnset_default.Text = "$([char]0x63a8)$([char]0x8350)$([char]0x9009)$([char]0x62e9)";
+
+$backuppage.Controls.Add($btnset_default);
+
+$btnset_selected = New-Object System.Windows.Forms.Button;
+$btnset_selected_point = New-Object System.Drawing.Point;
+$btnset_selected_point.X = ($BUTTON_GROUP_LEFT_POINT + $BUTTON_GROUP_WIDTH + $BUTTON_GROUP_SPACE);
+$btnset_selected_point.Y = (20 + $DATAGRID_HEIGHT + 45 + 30 + $CHECK_BOX_HEIGHT + 20);
+
+$btnset_selected.Location = $btnset_selected_point;
+$btnset_selected_size = New-Object System.Drawing.Size;
+$btnset_selected_size.Width = $BUTTON_GROUP_WIDTH;
+$btnset_selected_size.Height = $BUTTON_GROUP_HEIGHT;
+
+$btnset_selected.Size = $btnset_selected_size;
+# text 开始转移
+$btnset_selected.Text = "$([char]0x5f00)$([char]0x59cb)$([char]0x8f6c)$([char]0x79fb)";
+
+$backuppage.Controls.Add($btnset_selected);
+
+
+$btnset_restore = New-Object System.Windows.Forms.Button;
+$btnset_restore_point = New-Object System.Drawing.Point;
+$btnset_restore_point.X = ($BUTTON_GROUP_LEFT_POINT + $BUTTON_GROUP_WIDTH * 2 + $BUTTON_GROUP_SPACE * 2);
+$btnset_restore_point.Y = (20 + $DATAGRID_HEIGHT + 45 + 30 + $CHECK_BOX_HEIGHT + 20);
+
+$btnset_restore.Location = $btnset_restore_point;
+$btnset_restore_size = New-Object System.Drawing.Size;
+$btnset_restore_size.Width = $BUTTON_GROUP_WIDTH;
+$btnset_restore_size.Height = $BUTTON_GROUP_HEIGHT;
+
+$btnset_restore.Size = $btnset_restore_size;
+# text 恢复默认
+$btnset_restore.Text = "$([char]0x6062)$([char]0x590d)$([char]0x9ed8)$([char]0x8ba4)";
+
+$backuppage.Controls.Add($btnset_restore);
+
+
 $wrongimghdl = get_file_img -file ("{0}\wrong.png" -f (get_current_file_dir));
 $rightimghdl = get_file_img -file ("{0}\right.png" -f (get_current_file_dir));
 
@@ -427,6 +482,11 @@ $v = refresh_grid -grid $datagrid -okimg $rightimghdl -wrongimg $wrongimghdl;
 $v = set_grid_default_enable -grid $datagrid;
 
 $datagrid.Refresh();
+
+$btnset_default.Add_Click({
+    $v = set_grid_default_enable -grid $datagrid;
+    return;
+});
 
 
 
