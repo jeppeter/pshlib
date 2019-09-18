@@ -57,11 +57,14 @@ $refnum = 0;
 function refresh_datagrid($grid) {
 
     $global:refnum ++;
-    Write-Host "refnum [$global:refnum]";
+    write_stdout -msg "refnum [$global:refnum]";
     if ($global:refnum -gt 1) {
+        $cnt = $grid.RowCount;
+        write_stdout -msg "before row cnt [$cnt]";
         $grid.Rows.Clear();        
+        $cnt = $grid.RowCount;
+        write_stdout -msg "row cnt [$cnt]";
         $global:refnum = 0;
-        Write-Host "cleared data ";
     } else {
         $grid.Columns[0].ReadOnly = $false;
         $grid.Columns[3].ReadOnly = $true;
@@ -70,7 +73,8 @@ function refresh_datagrid($grid) {
         $grid.Rows.Add($false,"1", "2", $rightimg);
         $grid.Rows.Add($true,"a", "b", $wrongimg);
         $grid.Rows[1].Cells[0].ReadOnly = $true;
-        Write-Host "insert datas";
+        $cnt= $grid.RowCount;
+        write_stdout -msg "rowcnt[$cnt]";
     }
     $grid.Refresh();
     return;

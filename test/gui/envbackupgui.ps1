@@ -29,65 +29,57 @@ function set_datagrid_rowidx($grid,$keyname)
     $vn = _get_rowidx_keyname -keyname $keyname;
     $val = $grid.RowCount - 1;
     set_value_global -varname $vn -varvalue $val;
+    write_stdout -msg "insert[$keyname]idx[$val]";
     return $val;
 
 }
 
+function add_grid_row($grid,$chked,$keyname,$shellval,$img,$readonly)
+{
+    $grid.Rows.Add($chked,$keyname,$shellval,$img);
+    $idx = $grid.RowCount - 1;
+    $grid.Rows[$idx].Cells[0].ReadOnly = $readonly;
+    return set_datagrid_rowidx -grid $grid -keyname $keyname;
+}
 
-function insert_datagrid_common($grid,$chked,$keyname,$okimg,$wrongimg)
+
+function insert_datagrid_common($grid,$chked,$keyname,$okimg,$wrongimg, $defval)
 {
     $rmval = get_rmtask_value -keyname $keyname;
     $shellval = get_shell_folder_value -keyname $keyname;
-    if (-Not [string]::IsNullOrEmpty($rmval)) {
-        # now this is not allow to make value
-        $grid.Rows.Add($false,$keyname,$shellval,$wrongimg);
-        $idx = $grid.RowCount - 1;
-        $grid.Rows[$idx].Cells[0].ReadOnly = $true;
-    } else {
-        $grid.Rows.Add($chked,$keyname,$shellval,$okimg);
-        $idx = $grid.RowCount - 1;
-        $grid.Rows[$idx].Cells[0].ReadOnly = $false;
+    if ( [string]::IsNullOrEmpty($shellval)) {
+        $shellval = $defval;
     }
-    $val = set_datagrid_rowidx -grid $grid -keyname $keyname;
-    return $val;
+    if (-Not [string]::IsNullOrEmpty($rmval)) {
+        return add_grid_row -grid $grid -chked $false -keyname $keyname -shellval $shellval -img $wrongimg -readonly $true;
+    } 
+    return add_grid_row -grid $grid -chked $chked -keyname $keyname -shellval $shellval -img $okimg -readonly $false;
 }
 
-function insert_datagrid_spec($grid,$chked,$keyname,$itemname,$okimg,$wrongimg)
+function insert_datagrid_spec($grid,$chked,$keyname,$itemname,$okimg,$wrongimg,$defval)
 {
     $rmval = get_rmtask_value -keyname $keyname;
     $shellval = get_shell_folder_value -keyname $itemname;
-    if (-Not [string]::IsNullOrEmpty($rmval)) {
-        # now this is not allow to make value
-        $grid.Rows.Add($false,$keyname,$shellval,$wrongimg);
-        $idx = $grid.RowCount - 1;
-        $grid.Rows[$idx].Cells[0].ReadOnly = $true;
-    } else {
-        $grid.Rows.Add($chked,$keyname,$shellval,$okimg);
-        $idx = $grid.RowCount - 1;
-        $grid.Rows[$idx].Cells[0].ReadOnly = $false;
+    if ( [string]::IsNullOrEmpty($shellval)) {
+        $shellval = $defval;
     }
-
-    $val = set_datagrid_rowidx -grid $grid -keyname $keyname;
-    return $val;
+    if (-Not [string]::IsNullOrEmpty($rmval)) {
+        return add_grid_row -grid $grid -chked $false -keyname $keyname -shellval $shellval -img $wrongimg -readonly $true;
+    }
+    return add_grid_row -grid $grid -chked $chked -keyname $keyname -shellval $shellval -img $okimg -readonly $false;
 }
 
-function insert_datagrid_env($grid,$chked,$keyname,$okimg,$wrongimg)
+function insert_datagrid_env($grid,$chked,$keyname,$okimg,$wrongimg,$defval)
 {
     $rmval = get_rmtask_value -keyname $keyname;
     $shellval = get_env_value -keyname $keyname;
-    if (-Not [string]::IsNullOrEmpty($rmval)) {
-        # now this is not allow to make value
-        $grid.Rows.Add($false,$keyname,$shellval,$wrongimg);
-        $idx = $grid.RowCount - 1;
-        $grid.Rows[$idx].Cells[0].ReadOnly = $true;
-    } else {
-        $grid.Rows.Add($chked,$keyname,$shellval,$okimg);
-        $idx = $grid.RowCount - 1;
-        $grid.Rows[$idx].Cells[0].ReadOnly = $false;
+    if ( [string]::IsNullOrEmpty($shellval)) {
+        $shellval = $defval;
     }
-
-    $val = set_datagrid_rowidx -grid $grid -keyname $keyname;
-    return $val;
+    if (-Not [string]::IsNullOrEmpty($rmval)) {
+        return add_grid_row -grid $grid -chked $false -keyname $keyname -shellval $shellval -img $wrongimg -readonly $true;
+    }
+    return add_grid_row -grid $grid -chked $chked -keyname $keyname -shellval $shellval -img $okimg -readonly $false;   
 }
 
 
@@ -155,38 +147,82 @@ $datagrid.Size = $datagrid_size;
 $datagrid.MultiSelect = $false;
 $datagrid.ColumnHeadersVisible = $true;
 $datagrid.RowHeadersVisible = $false;
+$datagrid.AllowUserToAddRows = $false;
+$datagrid.AllowUserToDeleteRows = $false;
 $backuppage.Controls.Add($datagrid);
 
 $wrongimghdl = get_file_img -file ("{0}\wrong.png" -f (get_current_file_dir));
 $rightimghdl = get_file_img -file ("{0}\right.png" -f (get_current_file_dir));
 
 
+function insert_grid_columns($grid)
+{
+    # to first insert column
+    #$v = $grid.Columns.Clear();
+
+    $colchk = New-Object System.Windows.Forms.DataGridViewCheckBoxColumn;
+    $colname = New-Object System.Windows.Forms.DataGridViewTextboxColumn;
+    $colpath = New-Object System.Windows.Forms.DataGridViewTextboxColumn;
+    $colimg = New-Object System.Windows.Forms.DataGridViewImageColumn;
+
+    $colchk.Width = 40;
+    $colname.Width = 80;
+    $colpath.Width = 160;
+    $colimg.Width = 80;
+
+    #$grid.ColumnHeadersVisible = $true;
+
+    # name 设置
+    $colchk.Name = "$([char]0x8bbe)$([char]0x7f6e)";
+    $colchk.ReadOnly = $false;
+    # name 名称
+    $colname.Name = "$([char]0x540d)$([char]0x79f0)";
+    $colname.ReadOnly = $true;
+    # name 路径
+    $colpath.Name = "$([char]0x8def)$([char]0x5f84)";
+    $colpath.ReadOnly = $true;
+    # name 允许编辑
+    $colimg.Name="$([char]0x5141)$([char]0x8bb8)$([char]0x7f16)$([char]0x8f91)";
+    $colimg.ReadOnly = $true;
+
+    $grid.Columns.Add($colchk);
+    $grid.Columns.Add($colname);
+    $grid.Columns.Add($colpath);
+    $grid.Columns.Add($colimg);
+
+    return;
+}
+
 function refresh_grid($grid,$okimg,$wrongimg) 
 {
-    $grid.Rows.Clear();
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Personal" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Desktop" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Favorites" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "My Music" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "My Pictures" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "My Video" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Cookies" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Cache" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "History" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Recent" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "AppData" -okimg $okimg -wrongimg $wrongimg;
+    $grid.Rows.Clear();    
 
-    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "download" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "savedgames" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "contacts" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "search" -okimg $okimg -wrongimg $wrongimg;
-    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "link" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Personal" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_PERSONAL_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Desktop" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_DESKTOP_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Favorites" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_FAVORITES_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "My Music" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_MYMUSIC_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "My Pictures" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_MYPIC_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "My Video" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_MYVIDEO_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Cookies" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_COOKIES_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Cache" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_CACHE_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "History" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_HISTORY_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Recent" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_RECENT_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $true -keyname "AppData" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_APPDATA_DIR;
 
-    $v = insert_datagrid_env -grid $grid -chked $true -keyname "temp" -okimg $okimg -wrongimg $wrongimg;
+    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "download" -itemname $DOWNLOAD_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_DOWNLOADS_DIR;
+    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "savedgames" -itemname $SAVED_GAME_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_SAVEDGAMES_DIR;
+    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "contacts" -itemname $CONTACTS_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_CONTACTS_DIR;
+    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "search" -itemname $SEARCH_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_SEARCHES_DIR;
+    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "link" -itemname $LINK_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_LINKS_DIR;
+
+    $v = insert_datagrid_env -grid $grid -chked $true -keyname "temp" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_TEMP_DIR;
+
     $grid.Refresh();
     return ;
 }
 
-
+$v = insert_grid_columns -grid $datagrid;
 $v = refresh_grid -grid $datagrid -okimg $rightimghdl -wrongimg $wrongimghdl;
+
+$datagrid.Refresh();
 $mainfrm.ShowDialog() | Out-Null;
