@@ -1,5 +1,5 @@
 
-function backup_temp($newdir)
+function backup_temp($newdir,$copied,$removed)
 {
     $diffed = 0;
     $vn = _get_shellval_setted_keyname -keyname "temp";
@@ -40,14 +40,21 @@ function backup_temp($newdir)
     if (-Not [string]::IsNullOrEmpty($extmpval)) {
         if (-Not $newdir.Equals($extmpval)) {
             # now we should give the compare
-            $retval = add_task_keyname -keyname "temp" -dir $extmpval;
+            if ($removed) {
+                $retval = add_task_keyname -keyname "temp" -dir $extmpval;
+            } else {
+                $retval = add_task_keyname_empty -keyname "temp";
+            }
             if ($retval -lt 0) {
                 return $retval;
-            }
+            }                
 
-            $retval = copy_dir_top -srcdir $extmpval -dstdir $newdir;
-            if ($retval -lt 0) {
-                return -3;
+
+            if ($copied) {
+                $retval = copy_dir_top -srcdir $extmpval -dstdir $newdir;
+                if ($retval -lt 0) {
+                    return -3;
+                }
             }
             $diffed = 1;
         }
@@ -60,6 +67,11 @@ function backup_temp($newdir)
         if ($retval -ne 0) {
             return -6;
         }
+        $retval = add_task_keyname_empty -keyname "temp";
+        if ($retval -lt 0) {
+            return $retval;
+        }
+
         $diffed = 1;
     }
 
@@ -130,7 +142,7 @@ function restore_temp()
 
 
 
-function backup_spec($keyname,$itemname,$newdir)
+function backup_spec($keyname,$itemname,$newdir,$copied,$removed)
 {
     write_stdout -msg "keyname[$keyname] itemname[$itemname] newdir[$newdir]";
     $diffed = 0;
@@ -179,25 +191,21 @@ function backup_spec($keyname,$itemname,$newdir)
     if (-Not [string]::IsNullOrEmpty($exshellval)) {
         if (-Not $exshellval.Equals($newdir)) {
 
-            # first to add remove disk
-            $cmdk = _get_rmtask_keyname -keyname $keyname;
-            $v = get_value_global -varname $cmdk;
-            if (-Not [string]::IsNullOrEmpty($v)) {
-                write_stderr -msg "has already set rmtask[$keyname] [$cmdk] [$v]";
-                return -6;
+            if ($removed) {
+                $retval = add_task_keyname -keyname $keyname -dir $exshellval;                
+            } else {
+                $retval = add_task_keyname_empty -keyname $keyname;
             }
-
-
-            $v = add_once_task -taskname $cmdk -directory $exshellval;
-            if ([string]::IsNullOrEmpty($v)) {
-                return -4;
+            if ($retval -lt 0) {
+                return $retval;
             }
-            set_value_global -varname $cmdk -varvalue $v;
 
             # now to copy 
-            $retval = copy_dir_top -srcdir $exshellval -dstdir $newdir;
-            if ($retval -lt 0) {
-                return -7;
+            if ($copied) {
+                $retval = copy_dir_top -srcdir $exshellval -dstdir $newdir;
+                if ($retval -lt 0) {
+                    return -7;
+                }                
             }
             $diffed=1;
         }
@@ -205,6 +213,11 @@ function backup_spec($keyname,$itemname,$newdir)
         $retval = make_dir_safe -dir $newdir;
         if ($retval -ne 0) {
             return -3;
+        }
+
+        $retval = add_task_keyname_empty -keyname $keyname;
+        if ($retval -lt 0) {
+            return -5;
         }
         $diffed=1;
     }
@@ -279,7 +292,7 @@ function restore_spec($keyname,$itemname)
 }
 
 
-function backup_directory($keyname,$newdir)
+function backup_directory($keyname,$newdir,$copied,$removed)
 {
     write_stdout -msg "keyname [$keyname] newdir [$newdir]";
     $diffed = 0;
@@ -321,22 +334,6 @@ function backup_directory($keyname,$newdir)
             return -3;
         }
 
-        write_stdout -msg "exshellval [$exshellval] newdir [$newdir]";
-        if (-Not $exshellval.Equals($newdir)) {
-            $cmdk = _get_rmtask_keyname -keyname $keyname;
-            $v = get_value_global -varname $cmdk;
-            if (-Not [string]::IsNullOrEmpty($v)) {
-                write_stderr -msg "rmtask [$keyname] already set";
-                return -4;
-            }
-
-            $v = add_once_task -taskname $cmdk -directory $exshellval;
-            if ([string]::IsNullOrEmpty($v)) {
-                return -5;
-            }
-            set_value_global -varname $cmdk -varvalue $v;
-        }
-
     } elseif (-Not [string]::IsNullOrEmpty($usershellval) -Or -Not [string]::IsNullOrEmpty($shellval)) {
         write_stderr -msg "usershellval[$keyname][$usershellval] != shellval[$keyname][$shellval]";
         return -2;
@@ -349,13 +346,29 @@ function backup_directory($keyname,$newdir)
         if ($retval -ne 0) {
             return -3;
         }
+        $retval = add_task_keyname_empty -keyname $keyname;
+        if ($retval -lt 0) {
+            return $retval;
+        }
         $diffed = 1;
     } else {
         if(-Not $exshellval.Equals($newdir)) {
-            $retval = copy_dir_top -srcdir $exshellval -dstdir $newdir;
-            if ($retval -lt 0) {
-                return -3;
+            if ($copied) {
+                $retval = copy_dir_top -srcdir $exshellval -dstdir $newdir;
+                if ($retval -lt 0) {
+                    return -3;
+                }                
             }
+
+            if ($removed) {
+                $retval = add_task_keyname -keyname $keyname -dir $exshellval;
+            } else {
+                $retval = add_task_keyname_empty -keyname $keyname;
+            }
+            if ($retval -lt 0) {
+                return $retval;
+            }
+
             $diffed = 1;
         }        
     }

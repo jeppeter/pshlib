@@ -20,10 +20,11 @@ function write_stdout($msg)
 }
 
 
+write_stdout -msg "params [$params]";
 $p = Start-Process -FilePath $cmd -Passthru -ArgumentList $params;
 $p.EnableRaisingEvents = $true;
-$msg = ($p | gm | Out-String) ;
-write_stdout -msg $msg;
+#$msg = ($p | gm | Out-String) ;
+#write_stdout -msg $msg;
 $global:proc=$p;
 
 Register-ObjectEvent -InputObject $p -EventName Exited  -SourceIdentifier $p.Exited  -Action {

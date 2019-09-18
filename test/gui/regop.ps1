@@ -87,6 +87,12 @@ function add_once_task($taskname,$directory)
     return set_runonce_task -taskname $taskname -taskvalue $taskvalue;
 }
 
+function add_once_emptytask($taskname)
+{
+    $taskvalue = "cmd.exe /q /c `"`"";
+    return set_runonce_task -taskname $taskname -taskvalue $taskvalue;
+}
+
 
 function remove_once_task($taskname)
 {
@@ -146,11 +152,28 @@ function add_task_keyname($keyname,$dir)
     $cmdk = _get_rmtask_keyname -keyname $keyname;
     $v = get_value_global -varname $cmdk;
     if (-Not [string]::IsNullOrEmpty($v)) {
-        write_stderr -msg "has already set rmtask[temp] [$cmdk] [$v]";
+        write_stderr -msg "has already set rmtask[$keyname] [$cmdk] [$v]";
         return -6;
     }
 
     $v = add_once_task -taskname $cmdk -directory $dir;
+    if ([string]::IsNullOrEmpty($v)) {
+        return -4;
+    }
+    set_value_global -varname $cmdk -varvalue $v;
+    return 0;
+}
+
+function add_task_keyname_empty($keyname)
+{
+    $cmdk = _get_rmtask_keyname -keyname $keyname;
+    $v = get_value_global -varname $cmdk;
+    if (-Not [string]::IsNullOrEmpty($v)) {
+        write_stderr -msg "has already set rmtask[$keyname] [$cmdk] [$v]";
+        return -6;
+    }
+
+    $v = add_once_emptytask -taskname $cmdk;
     if ([string]::IsNullOrEmpty($v)) {
         return -4;
     }
