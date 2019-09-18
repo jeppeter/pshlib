@@ -123,3 +123,25 @@ function get_next_char($c) {
     } 
     return $c;    
 }
+
+function get_last_slash_delete($str)
+{
+    $lastidx = -1;
+    $retstr = "";
+    if (-Not [string]::IsNullOrEmpty($str)) {
+        $lastidx = $str.Length - 1;
+        while ($lastidx -ge 0) {
+            if ($str[$lastidx] -ne [char]'\') {
+                break;
+            }
+            $lastidx --;
+        }
+
+        if ($lastidx -gt 0) {
+            for($i = 0; $i -le $lastidx;$i++) {
+                $retstr += $str[$i];
+            }
+        }
+    }
+    return $retstr;
+}

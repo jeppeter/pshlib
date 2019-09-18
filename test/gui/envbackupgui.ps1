@@ -488,6 +488,138 @@ $btnset_default.Add_Click({
     return;
 });
 
+function get_grid_checked($grid,$keyname,$paramname,$dir)
+{
+    $idx = get_datagrid_rowidx -grid $grid -keyname $keyname;
+    if ([string]::IsNullOrEmpty($idx)) {
+        return "";
+    }
+
+    if ($grid.Rows[$idx].Cells[0].Value -eq 0) {
+        return "";
+    }
+
+    return (" -{0} `"{1}`"" -f $paramname,$dir);
+}
+
+function get_chkbox_param($chkbox,$paramname)
+{
+    if ($chkbox.Checked) {
+        return " -{0}" -f $paramname;
+    }
+    return "";
+}
+
+$global:backup_proc = $null;
+
+function handle_backup_exited()
+{
+    $exitcode = $global:backup_proc.ExitCode;
+    if ($exitcode -eq 0) {
+        # text 无须转移
+        $note = "$([char]0x65e0)$([char]0x987b)$([char]0x8f6c)$([char]0x79fb)";
+        # text 无须转移
+        $caption = "$([char]0x65e0)$([char]0x987b)$([char]0x8f6c)$([char]0x79fb)";
+        $retval = [System.Windows.Forms.MessageBox]::Show($note, $caption, 'OK');
+    } elseif ($exitcode -eq 1) {
+        # text 已经成功要重新登录生效 是否现在重新登录
+        $note = "$([char]0x5df2)$([char]0x7ecf)$([char]0x6210)$([char]0x529f)$([char]0x8981)$([char]0x91cd)$([char]0x65b0)$([char]0x767b)$([char]0x5f55)$([char]0x751f)$([char]0x6548),$([char]0x662f)$([char]0x5426)$([char]0x73b0)$([char]0x5728)$([char]0x91cd)$([char]0x65b0)$([char]0x767b)$([char]0x5f55)";
+        # text 成功提示
+        $caption = "$([char]0x6210)$([char]0x529f)$([char]0x63d0)$([char]0x793a)";
+        $retval = [System.Windows.Forms.MessageBox]::Show($note, $caption, 'OKCancel','Info','Button2');
+        if ($retval -eq "OK") {
+            $global:backup_proc = $null;
+            $v = Start-Process -Wait -Path "shutdown.exe" -ArgumentList "/l /t 0";
+            return;
+        }
+    } else {
+        # text 转移失败
+        $note = "$([char]0x8f6c)$([char]0x79fb)$([char]0x5931)$([char]0x8d25)";
+        # text 转移失败
+        $caption = "$([char]0x8f6c)$([char]0x79fb)$([char]0x5931)$([char]0x8d25)";
+        $retval = [System.Windows.Forms.MessageBox]::Show($note, $caption, 'OK','Error');
+    }
+
+    $global:backup_proc = $null;
+    $btnset_selected.Enabled = $true;
+    $btnset_restore.Enabled = $true;
+    $v = refresh_grid -grid $datagrid;
+    return;
+}
+
+$btnset_selected.Add_Click({
+
+    if ($global:backup_proc) {
+        write_stderr -msg "can not click this";
+        return;
+    }
+    # text 确定要进行转移?
+    $note = "$([char]0x786e)$([char]0x5b9a)$([char]0x8981)$([char]0x8fdb)$([char]0x884c)$([char]0x8f6c)$([char]0x79fb)";
+    # text 开始转移
+    $caption = "$([char]0x5f00)$([char]0x59cb)$([char]0x8f6c)$([char]0x79fb)";
+    $retval = [System.Windows.Forms.MessageBox]::Show($note, $caption, 'OKCancel', 'Error', 'Button2');
+    if ($retval -ne "OK") {
+        return;
+    }
+
+    write_stdout -msg "call selected backup";
+
+    $currootdir = $txtboxpath.Text;
+    $rootdir = get_last_slash_delete -str $currootdir;
+
+    $curdir = (get_current_file_dir);
+
+    $cmd = "powershell.exe";
+    $cmdargs = "-ExecutionPolicy Bypass -File";
+    $cmdargs += (" `"{0}\envbackup.ps1`"" -f $curdir);
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "Personal" -paramname "Personal" -dir ("{0}\Personal" -f $rootdir));
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "Desktop" -paramname "Desktop" -dir ("{0}\Desktop" -f $rootdir));
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "Favorites" -paramname "Favorites" -dir ("{0}\Favorites" -f $rootdir));
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "My Music" -paramname "MyMusic" -dir ("{0}\Music" -f $rootdir));
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "My Pictures" -paramname "MyPic" -dir ("{0}\Pictures" -f $rootdir));
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "My Video" -paramname "MyVideo" -dir ("{0}\Video" -f $rootdir));
+
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "download" -paramname "Downloads" -dir ("{0}\Downloads" -f $rootdir));
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "savedgames" -paramname "SavedGames" -dir ("{0}\Saved Games" -f $rootdir));
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "contacts" -paramname "Contacts" -dir ("{0}\Contacts" -f $rootdir));
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "search" -paramname "Searches" -dir ("{0}\Searches" -f $rootdir));
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "link" -paramname "Links" -dir ("{0}\Links" -f $rootdir));
+
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "Cookies" -paramname "Cookies" -dir ("{0}\Cookies" -f $rootdir));
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "Cache" -paramname "Cache" -dir ("{0}\Cache" -f $rootdir));
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "History" -paramname "History" -dir ("{0}\History" -f $rootdir));
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "Recent" -paramname "Recent" -dir ("{0}\Recent" -f $rootdir));
+    
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "temp" -paramname "TempFile" -dir ("{0}\Temp" -f $rootdir));
+    $cmdargs += (get_grid_checked -grid $datagrid -keyname "AppData" -paramname "AppData" -dir ("{0}\AppData" -f $rootdir));
+
+    $cmdargs += (get_chkbox_param -chkbox $chkbox_removed -paramname "RemoveOld");
+    $cmdargs += (get_chkbox_param -chkbox $chkbox_copyfile -paramname "CopyFiles");
+    $cmdargs += (get_chkbox_param -chkbox $chkbox_regsetted -paramname "RegSetted");
+
+    write_stdout -msg "call command [$cmd][$cmdargs]";
+
+    $global:backup_proc = Start-Process -FilePath $cmd -Passthru -ArgumentList $cmdargs;
+    if ( -Not $global:backup_proc) {
+        # text 转移失败
+        $note = "$([char]0x8f6c)$([char]0x79fb)$([char]0x5931)$([char]0x8d25)";
+        # text 转移失败
+        $caption = "$([char]0x8f6c)$([char]0x79fb)$([char]0x5931)$([char]0x8d25)";
+        $retval = [System.Windows.Forms.MessageBox]::Show($note, $caption, 'OK');
+        $v = refresh_grid -grid $datagrid;
+        return ;
+    }
+
+    # now we should disable the button
+    $btnset_restore.Enabled = $false;
+    $btnset_selected.Enabled = $false;
+    $global:backup_proc.EnableRaisingEvents = $true;
+
+    Register-ObjectEvent -InputObject $global:backup_proc -EventName Exited  -SourceIdentifier $global:backup_proc.Exited  -Action {
+        $v = handle_backup_exited;
+    } | Out-Null;
+    return ;
+});
 
 
 

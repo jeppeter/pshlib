@@ -212,6 +212,11 @@ $btnset_restore.Size = $btnset_restore_size;
 # text 恢复默认
 $btnset_restore.Text = "$([char]0x6062)$([char]0x590d)$([char]0x9ed8)$([char]0x8ba4)";
 
+$btnset_selected.Add_Click({
+  $btnset_selected.Enabled = $false;
+  $btnset_restore.Enabled = $false;
+  });
+
 $mainfrm.Controls.Add($btnset_restore);
 
 
