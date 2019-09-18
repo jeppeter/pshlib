@@ -34,14 +34,20 @@ Register-ObjectEvent -InputObject $p -EventName Exited  -SourceIdentifier $p.Exi
 
 $cnt=0;
 while ($true) {
+    write_stdout -msg "cnt[$cnt]";
     $val = $p.Exited;
     $code = $p.ExitCode;
     $e = $p.HasExited;
     write_stdout -msg "exited[$val]code[$code]e[$e]";
     if ($p.HasExited) {
+        write_stdout -msg "before sleep test";
         break;
     }
     Start-Sleep -s 1.0 | Out-Null;
+    if ($p.HasExited) {
+        write_stdout -msg "after sleep test";
+        break;
+    }
     write_stdout -msg "wait [$cnt]";
     $cnt ++;
 }

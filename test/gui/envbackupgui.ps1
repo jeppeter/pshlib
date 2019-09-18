@@ -511,10 +511,28 @@ function get_chkbox_param($chkbox,$paramname)
 }
 
 $global:backup_proc = $null;
+$global:backup_timer = $null;
+
+function restore_btn_state()
+{
+    $btnset_selected.Enabled = $true;
+    $btnset_restore.Enabled = $true;
+    return;
+}
+
+function stop_backup_timer()
+{
+    if ($global:backup_timer) {
+        $global:backup_timer.Stop();
+        $global:backup_timer = $null;
+    }
+    return;
+}
 
 function handle_backup_exited()
 {
     $exitcode = $global:backup_proc.ExitCode;
+    write_stdout -msg "exitcode [$exitcode]";
     if ($exitcode -eq 0) {
         # text 无须转移
         $note = "$([char]0x65e0)$([char]0x987b)$([char]0x8f6c)$([char]0x79fb)";
@@ -526,7 +544,8 @@ function handle_backup_exited()
         $note = "$([char]0x5df2)$([char]0x7ecf)$([char]0x6210)$([char]0x529f)$([char]0x8981)$([char]0x91cd)$([char]0x65b0)$([char]0x767b)$([char]0x5f55)$([char]0x751f)$([char]0x6548),$([char]0x662f)$([char]0x5426)$([char]0x73b0)$([char]0x5728)$([char]0x91cd)$([char]0x65b0)$([char]0x767b)$([char]0x5f55)";
         # text 成功提示
         $caption = "$([char]0x6210)$([char]0x529f)$([char]0x63d0)$([char]0x793a)";
-        $retval = [System.Windows.Forms.MessageBox]::Show($note, $caption, 'OKCancel','Info','Button2');
+        $retval = [System.Windows.Forms.MessageBox]::Show($note, $caption, 'OKCancel','Exclamation','Button2');
+        write_stdout -msg "retval [$retval]";
         if ($retval -eq "OK") {
             $global:backup_proc = $null;
             $v = Start-Process -Wait -Path "shutdown.exe" -ArgumentList "/l /t 0";
@@ -541,10 +560,24 @@ function handle_backup_exited()
     }
 
     $global:backup_proc = $null;
-    $btnset_selected.Enabled = $true;
-    $btnset_restore.Enabled = $true;
     $v = refresh_grid -grid $datagrid;
+    $v = restore_btn_state;
     return;
+}
+
+function handle_backup_timer()
+{
+    if ( -Not $global:backup_proc) {
+        $v = stop_backup_timer;
+        $v = restore_btn_state;
+        return;
+    }
+
+    if ($global:backup_proc.HasExited) {
+        $v = stop_backup_timer;
+        $v = handle_backup_exited;
+        return;
+    }
 }
 
 $btnset_selected.Add_Click({
@@ -615,9 +648,12 @@ $btnset_selected.Add_Click({
     $btnset_selected.Enabled = $false;
     $global:backup_proc.EnableRaisingEvents = $true;
 
-    Register-ObjectEvent -InputObject $global:backup_proc -EventName Exited  -SourceIdentifier $global:backup_proc.Exited  -Action {
-        $v = handle_backup_exited;
-    } | Out-Null;
+    $global:backup_timer = New-Object System.Windows.Forms.Timer;
+    $global:backup_timer.Interval = 500;
+    $global:backup_timer.add_tick({
+        handle_backup_timer | Out-Null;
+    });
+    $global:backup_timer.Start();
     return ;
 });
 
