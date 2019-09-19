@@ -4,7 +4,13 @@ function write_stderr($msg)
 {
     $line = $MyInvocation.ScriptLineNumber;
     $file = $MyInvocation.ScriptName;
-    $newmsg = ("[{0}:{1}]:$msg" -f $file,$line);
+    $newmsg = "[";
+    $newmsg += "$file";
+    $newmsg += ":";
+    $newmsg += "$line";
+    $newmsg += "]";
+    $newmsg += ":";
+    $newmsg += "$msg";
     [Console]::Error.WriteLine.Invoke($newmsg);
     if (-Not [string]::IsNullOrEmpty($FileAppend)) {
         $newmsg | Out-File -FilePath $FileAppend -Append -ErrorAction SilentlyContinue ;
@@ -16,7 +22,13 @@ function write_stdout($msg)
 {
     $line = $MyInvocation.ScriptLineNumber;
     $file = $MyInvocation.ScriptName;
-    $newmsg = ("[{0}:{1}]:$msg" -f $file,$line);
+    $newmsg = "[";
+    $newmsg += "$file";
+    $newmsg += ":";
+    $newmsg += "$line";
+    $newmsg += "]";
+    $newmsg += ":";
+    $newmsg += "$msg";
     [Console]::Out.WriteLine.Invoke($newmsg);
     if (-Not [string]::IsNullOrEmpty($FileAppend)) {
         $newmsg | Out-File -FilePath $FileAppend -Append -ErrorAction SilentlyContinue ;

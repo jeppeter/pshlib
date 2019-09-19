@@ -555,7 +555,7 @@ function handle_backup_exited()
         write_stdout -msg "retval [$retval]";
         if ($retval -eq "OK") {
             $global:backup_proc = $null;
-            $v = Start-Process -Wait -FilePath "shutdown.exe" -ArgumentList "/l";
+            $v = Start-Process -WindowStyle Hidden -Wait -FilePath "shutdown.exe" -ArgumentList "/l";
             return;
         }
     } else {
@@ -662,7 +662,7 @@ $btnset_selected.Add_Click({
 
     write_stdout -msg "call command [$cmd][$cmdargs]";
 
-    $global:backup_proc = Start-Process -FilePath $cmd -Passthru -ArgumentList $cmdargs;
+    $global:backup_proc = Start-Process -WindowStyle Hidden -FilePath $cmd -Passthru -ArgumentList $cmdargs;
     if ( -Not $global:backup_proc) {
         # text 转移失败
         $note = "$([char]0x8f6c)$([char]0x79fb)$([char]0x5931)$([char]0x8d25)";
@@ -759,7 +759,7 @@ $btnset_restore.Add_Click({
 
     write_stdout -msg "call command [$cmd][$cmdargs]";
 
-    $global:backup_proc = Start-Process -FilePath $cmd -Passthru -ArgumentList $cmdargs;
+    $global:backup_proc = Start-Process -WindowStyle Hidden -FilePath $cmd -Passthru -ArgumentList $cmdargs;
     if ( -Not $global:backup_proc) {
         # text 转移失败
         $note = "$([char]0x8f6c)$([char]0x79fb)$([char]0x5931)$([char]0x8d25)";
