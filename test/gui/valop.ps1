@@ -145,3 +145,20 @@ function get_last_slash_delete($str)
     }
     return $retstr;
 }
+
+function is_valid_abs_path($path)
+{
+    if ($path.Length -lt 2) {
+        return $false;
+    }
+
+    if (-Not (((($path[0]) -ge ([char]'a')) -And (($path[0]) -le ([char]'z'))) -Or 
+            ((($path[0]) -ge ([char]'A')) -And (($path[0]) -le ([char]'Z'))))) {
+        return $false;
+    }
+
+    if ($path[1] -ne ([char]':')) {
+        return $false;
+    }
+    return $true;
+}

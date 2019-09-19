@@ -59,10 +59,6 @@ function backup_temp($newdir,$copied,$removed,$regsetted)
             $diffed = 1;
         }
     } else {
-        $retval = remove_dir -dir $newdir;
-        if ($retval -ne 0) {
-            return -5;
-        }
         $retval = make_dir_safe -dir $newdir;
         if ($retval -ne 0) {
             return -6;

@@ -195,7 +195,6 @@ $syspage.UseVisualStyleBackColor = $True;
 $syspage.Name = "syspagectrl";
 # this is the chinese 系统
 $syspage.Text = "$([char]0x7cfb)$([char]0x7edf)";;
-$maintabctrl.Controls.Add($syspage);
 
 $backuppage.DataBindings.DefaultDataSourceUpdateMode = 0;
 $backuppage.UseVisualStyleBackColor = $True;
@@ -203,7 +202,7 @@ $backuppage.Name = "syspagectrl";
 # this is the chinese 用户资料重定向
 $backuppage.Text = "$([char]0x7528)$([char]0x6237)$([char]0x8d44)$([char]0x6599)$([char]0x91cd)$([char]0x5b9a)$([char]0x5411)";
 $maintabctrl.Controls.Add($backuppage);
-
+$maintabctrl.Controls.Add($syspage);
 
 $datagrid = New-Object System.Windows.Forms.DataGridView;
 $datagrid_point = New-Object System.Drawing.Point;
@@ -352,6 +351,13 @@ $chkbox_selall.Add_CheckStateChanged({
     $v = set_grid_check_box -grid $datagrid -state $chkbox_selall.Checked;
 });
 
+$chkbox_removed.Add_CheckStateChanged({
+    if ($chkbox_removed.Checked) {
+        # if we remove old directory ,so we should set registry to new one
+        $chkbox_regsetted.Checked = $true;
+    }
+});
+
 $backuppage.Controls.Add($chkbox_selall);
 
 
@@ -405,9 +411,10 @@ $btnset_restore.Text = "$([char]0x6062)$([char]0x590d)$([char]0x9ed8)$([char]0x8
 $backuppage.Controls.Add($btnset_restore);
 
 
-$wrongimghdl = get_file_img -file ("{0}\wrong.png" -f (get_current_file_dir));
-$rightimghdl = get_file_img -file ("{0}\right.png" -f (get_current_file_dir));
+$global:wrongimghdl = get_file_img -file ("{0}\wrong.png" -f (get_current_file_dir));
+$global:rightimghdl = get_file_img -file ("{0}\right.png" -f (get_current_file_dir));
 
+write_stdout -msg "wrongimghdl [$wrongimghdl] rightimghdl [$rightimghdl]";
 
 function insert_grid_columns($grid)
 {
@@ -451,34 +458,34 @@ function refresh_grid($grid,$okimg,$wrongimg)
 {
     $grid.Rows.Clear();    
 
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Personal" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_PERSONAL_DIR;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Desktop" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_DESKTOP_DIR;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Favorites" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_FAVORITES_DIR;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "My Music" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_MYMUSIC_DIR;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "My Pictures" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_MYPIC_DIR;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "My Video" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_MYVIDEO_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $false -keyname "Personal" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_PERSONAL_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $false -keyname "Desktop" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_DESKTOP_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $false -keyname "Favorites" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_FAVORITES_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $false -keyname "My Music" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_MYMUSIC_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $false -keyname "My Pictures" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_MYPIC_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $false -keyname "My Video" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_MYVIDEO_DIR;
 
-    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "download" -itemname $DOWNLOAD_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_DOWNLOADS_DIR;
-    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "savedgames" -itemname $SAVED_GAME_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_SAVEDGAMES_DIR;
-    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "contacts" -itemname $CONTACTS_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_CONTACTS_DIR;
-    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "search" -itemname $SEARCH_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_SEARCHES_DIR;
-    $v = insert_datagrid_spec -grid $grid -chked $true -keyname "link" -itemname $LINK_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_LINKS_DIR;
+    $v = insert_datagrid_spec -grid $grid -chked $false -keyname "download" -itemname $DOWNLOAD_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_DOWNLOADS_DIR;
+    $v = insert_datagrid_spec -grid $grid -chked $false -keyname "savedgames" -itemname $SAVED_GAME_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_SAVEDGAMES_DIR;
+    $v = insert_datagrid_spec -grid $grid -chked $false -keyname "contacts" -itemname $CONTACTS_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_CONTACTS_DIR;
+    $v = insert_datagrid_spec -grid $grid -chked $false -keyname "search" -itemname $SEARCH_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_SEARCHES_DIR;
+    $v = insert_datagrid_spec -grid $grid -chked $false -keyname "link" -itemname $LINK_ITEM_NAME -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_LINKS_DIR;
 
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Cookies" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_COOKIES_DIR;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Cache" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_CACHE_DIR;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "History" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_HISTORY_DIR;
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "Recent" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_RECENT_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $false -keyname "Cookies" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_COOKIES_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $false -keyname "Cache" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_CACHE_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $false -keyname "History" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_HISTORY_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $false -keyname "Recent" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_RECENT_DIR;
 
-    $v = insert_datagrid_env -grid $grid -chked $true -keyname "temp" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_TEMP_DIR;
+    $v = insert_datagrid_env -grid $grid -chked $false -keyname "temp" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_TEMP_DIR;
 
-    $v = insert_datagrid_common -grid $grid -chked $true -keyname "AppData" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_APPDATA_DIR;
+    $v = insert_datagrid_common -grid $grid -chked $false -keyname "AppData" -okimg $okimg -wrongimg $wrongimg -defval $DEFAULT_APPDATA_DIR;
 
     $grid.Refresh();
     return ;
 }
 
 $v = insert_grid_columns -grid $datagrid;
-$v = refresh_grid -grid $datagrid -okimg $rightimghdl -wrongimg $wrongimghdl;
+$v = refresh_grid -grid $datagrid -okimg $global:rightimghdl -wrongimg $global:wrongimghdl;
 $v = set_grid_default_enable -grid $datagrid;
 
 $datagrid.Refresh();
@@ -539,7 +546,7 @@ function handle_backup_exited()
         # text 无须转移
         $caption = "$([char]0x65e0)$([char]0x987b)$([char]0x8f6c)$([char]0x79fb)";
         $retval = [System.Windows.Forms.MessageBox]::Show($note, $caption, 'OK');
-    } elseif ($exitcode -eq 1) {
+    } elseif ($exitcode -eq 25) {
         # text 已经成功要重新登录生效 是否现在重新登录
         $note = "$([char]0x5df2)$([char]0x7ecf)$([char]0x6210)$([char]0x529f)$([char]0x8981)$([char]0x91cd)$([char]0x65b0)$([char]0x767b)$([char]0x5f55)$([char]0x751f)$([char]0x6548),$([char]0x662f)$([char]0x5426)$([char]0x73b0)$([char]0x5728)$([char]0x91cd)$([char]0x65b0)$([char]0x767b)$([char]0x5f55)";
         # text 成功提示
@@ -548,7 +555,7 @@ function handle_backup_exited()
         write_stdout -msg "retval [$retval]";
         if ($retval -eq "OK") {
             $global:backup_proc = $null;
-            $v = Start-Process -Wait -Path "shutdown.exe" -ArgumentList "/l /t 0";
+            $v = Start-Process -Wait -FilePath "shutdown.exe" -ArgumentList "/l /t 0";
             return;
         }
     } else {
@@ -560,7 +567,7 @@ function handle_backup_exited()
     }
 
     $global:backup_proc = $null;
-    $v = refresh_grid -grid $datagrid;
+    $v = refresh_grid -grid $datagrid -okimg $global:rightimghdl -wrongimg $global:wrongimghdl;
     $v = restore_btn_state;
     return;
 }
@@ -600,35 +607,59 @@ $btnset_selected.Add_Click({
     $currootdir = $txtboxpath.Text;
     $rootdir = get_last_slash_delete -str $currootdir;
 
+    $v = is_valid_abs_path -path $rootdir;
+    if (-Not $v) {
+        # text 备份路径必须是绝对路径
+        $note = "$([char]0x5907)$([char]0x4efd)$([char]0x8def)$([char]0x5f84)$([char]0x5fc5)$([char]0x987b)$([char]0x662f)$([char]0x7edd)$([char]0x5bf9)$([char]0x8def)$([char]0x5f84)";
+        # text 错误
+        $caption = "$([char]0x95e9)$([char]0x8bef)";
+        $v = [System.Windows.Forms.MessageBox]::Show($note, $caption, 'OK', 'Error');
+        return ;
+    }
+
     $curdir = (get_current_file_dir);
 
     $cmd = "powershell.exe";
     $cmdargs = "-ExecutionPolicy Bypass -File";
     $cmdargs += (" `"{0}\envbackup.ps1`"" -f $curdir);
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "Personal" -paramname "Personal" -dir ("{0}\Personal" -f $rootdir));
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "Desktop" -paramname "Desktop" -dir ("{0}\Desktop" -f $rootdir));
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "Favorites" -paramname "Favorites" -dir ("{0}\Favorites" -f $rootdir));
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "My Music" -paramname "MyMusic" -dir ("{0}\Music" -f $rootdir));
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "My Pictures" -paramname "MyPic" -dir ("{0}\Pictures" -f $rootdir));
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "My Video" -paramname "MyVideo" -dir ("{0}\Video" -f $rootdir));
+    $cmdpathargs = "";
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "Personal" -paramname "Personal" -dir ("{0}\Personal" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "Desktop" -paramname "Desktop" -dir ("{0}\Desktop" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "Favorites" -paramname "Favorites" -dir ("{0}\Favorites" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "My Music" -paramname "MyMusic" -dir ("{0}\Music" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "My Pictures" -paramname "MyPic" -dir ("{0}\Pictures" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "My Video" -paramname "MyVideo" -dir ("{0}\Video" -f $rootdir));
 
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "download" -paramname "Downloads" -dir ("{0}\Downloads" -f $rootdir));
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "savedgames" -paramname "SavedGames" -dir ("{0}\Saved Games" -f $rootdir));
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "contacts" -paramname "Contacts" -dir ("{0}\Contacts" -f $rootdir));
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "search" -paramname "Searches" -dir ("{0}\Searches" -f $rootdir));
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "link" -paramname "Links" -dir ("{0}\Links" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "download" -paramname "Downloads" -dir ("{0}\Downloads" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "savedgames" -paramname "SavedGames" -dir ("{0}\Saved Games" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "contacts" -paramname "Contacts" -dir ("{0}\Contacts" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "search" -paramname "Searches" -dir ("{0}\Searches" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "link" -paramname "Links" -dir ("{0}\Links" -f $rootdir));
 
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "Cookies" -paramname "Cookies" -dir ("{0}\Cookies" -f $rootdir));
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "Cache" -paramname "Cache" -dir ("{0}\Cache" -f $rootdir));
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "History" -paramname "History" -dir ("{0}\History" -f $rootdir));
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "Recent" -paramname "Recent" -dir ("{0}\Recent" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "Cookies" -paramname "Cookies" -dir ("{0}\Cookies" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "Cache" -paramname "Cache" -dir ("{0}\Cache" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "History" -paramname "History" -dir ("{0}\History" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "Recent" -paramname "Recent" -dir ("{0}\Recent" -f $rootdir));
     
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "temp" -paramname "TempFile" -dir ("{0}\Temp" -f $rootdir));
-    $cmdargs += (get_grid_checked -grid $datagrid -keyname "AppData" -paramname "AppData" -dir ("{0}\AppData" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "temp" -paramname "TempFile" -dir ("{0}\Temp" -f $rootdir));
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "AppData" -paramname "AppData" -dir ("{0}\AppData" -f $rootdir));
+
+    if ([string]::IsNullOrEmpty($cmdpathargs)) {
+        # text 请选择至少一项
+        $note = "$([char]0x8bf7)$([char]0x9009)$([char]0x62e9)$([char]0x81f3)$([char]0x5c11)$([char]0x4e00)$([char]0x9879)";
+        # text 失败提示
+        $caption = "$([char]0x5931)$([char]0x8d25)$([char]0x63d0)$([char]0x793a)";
+        $retval = [System.Windows.Forms.MessageBox]::Show($note, $caption, 'OK','Error');
+        return;
+    }
+
+    $cmdargs += $cmdpathargs;
 
     $cmdargs += (get_chkbox_param -chkbox $chkbox_removed -paramname "RemoveOld");
     $cmdargs += (get_chkbox_param -chkbox $chkbox_copyfile -paramname "CopyFiles");
     $cmdargs += (get_chkbox_param -chkbox $chkbox_regsetted -paramname "RegSetted");
+
+    $cmdargs += " -FileAppend pslog.txt";
 
     write_stdout -msg "call command [$cmd][$cmdargs]";
 
@@ -657,6 +688,102 @@ $btnset_selected.Add_Click({
     return ;
 });
 
+$btnset_restore.Add_Click({
+
+    if ($global:backup_proc) {
+        write_stderr -msg "can not click this";
+        return;
+    }
+
+    if (-Not $chkbox_regsetted.Checked) {
+        # text 必须选择更改目录
+        $note = "$([char]0x5fc5)$([char]0x987b)$([char]0x9009)$([char]0x62e9)$([char]0x66f4)$([char]0x6539)$([char]0x76ee)$([char]0x5f55)";
+        # text 错误
+        $caption = "$([char]0x95e9)$([char]0x8bef)";
+        $v = [System.Windows.Forms.MessageBox]::Show($note, $caption, 'OK', 'Error');
+        return ;
+    }
+    # text 确定要进行恢复?
+    $note = "$([char]0x786e)$([char]0x5b9a)$([char]0x8981)$([char]0x8fdb)$([char]0x884c)$([char]0x6062)$([char]0x590d)";
+    # text 开始恢复
+    $caption = "$([char]0x5f00)$([char]0x59cb)$([char]0x6062)$([char]0x590d)";
+    $retval = [System.Windows.Forms.MessageBox]::Show($note, $caption, 'OKCancel', 'Exclamation', 'Button2');
+    if ($retval -ne "OK") {
+        return;
+    }
+
+    write_stdout -msg "call restore backup";
+
+    $curdir = (get_current_file_dir);
+
+    $cmd = "powershell.exe";
+    $cmdargs = "-ExecutionPolicy Bypass -File";
+    $cmdargs += (" `"{0}\envbackup.ps1`"" -f $curdir);
+    $cmdpathargs = "";
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "Personal" -paramname "Personal" -dir $DEFAULT_PERSONAL_DIR);
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "Desktop" -paramname "Desktop" -dir $DEFAULT_DESKTOP_DIR);
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "Favorites" -paramname "Favorites" -dir $DEFAULT_FAVORITES_DIR);
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "My Music" -paramname "MyMusic" -dir $DEFAULT_MYMUSIC_DIR);
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "My Pictures" -paramname "MyPic" -dir $DEFAULT_MYPIC_DIR);
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "My Video" -paramname "MyVideo" -dir $DEFAULT_MYVIDEO_DIR);
+
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "download" -paramname "Downloads" -dir $DEFAULT_DOWNLOADS_DIR);
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "savedgames" -paramname "SavedGames" -dir $DEFAULT_SAVEDGAMES_DIR);
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "contacts" -paramname "Contacts" -dir $DEFAULT_CONTACTS_DIR);
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "search" -paramname "Searches" -dir $DEFAULT_SEARCHES_DIR);
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "link" -paramname "Links" -dir $DEFAULT_LINKS_DIR);
+
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "Cookies" -paramname "Cookies" -dir $DEFAULT_COOKIES_DIR);
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "Cache" -paramname "Cache" -dir $DEFAULT_CACHE_DIR);
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "History" -paramname "History" -dir $DEFAULT_HISTORY_DIR);
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "Recent" -paramname "Recent" -dir $DEFAULT_RECENT_DIR);
+    
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "temp" -paramname "TempFile" -dir $DEFAULT_TEMP_DIR);
+    $cmdpathargs += (get_grid_checked -grid $datagrid -keyname "AppData" -paramname "AppData" -dir $DEFAULT_APPDATA_DIR);
+
+    if ([string]::IsNullOrEmpty($cmdpathargs)) {
+        # text 请选择至少一项
+        $note = "$([char]0x8bf7)$([char]0x9009)$([char]0x62e9)$([char]0x81f3)$([char]0x5c11)$([char]0x4e00)$([char]0x9879)";
+        # text 失败提示
+        $caption = "$([char]0x5931)$([char]0x8d25)$([char]0x63d0)$([char]0x793a)";
+        $retval = [System.Windows.Forms.MessageBox]::Show($note, $caption, 'OK','Error');
+        return;
+    }
+
+    $cmdargs += $cmdpathargs;
+
+    $cmdargs += (get_chkbox_param -chkbox $chkbox_removed -paramname "RemoveOld");
+    $cmdargs += (get_chkbox_param -chkbox $chkbox_copyfile -paramname "CopyFiles");
+    $cmdargs += (get_chkbox_param -chkbox $chkbox_regsetted -paramname "RegSetted");
+
+    $cmdargs += " -FileAppend pslog.txt";
+
+    write_stdout -msg "call command [$cmd][$cmdargs]";
+
+    $global:backup_proc = Start-Process -FilePath $cmd -Passthru -ArgumentList $cmdargs;
+    if ( -Not $global:backup_proc) {
+        # text 转移失败
+        $note = "$([char]0x8f6c)$([char]0x79fb)$([char]0x5931)$([char]0x8d25)";
+        # text 转移失败
+        $caption = "$([char]0x8f6c)$([char]0x79fb)$([char]0x5931)$([char]0x8d25)";
+        $retval = [System.Windows.Forms.MessageBox]::Show($note, $caption, 'OK');
+        $v = refresh_grid -grid $datagrid;
+        return ;
+    }
+
+    # now we should disable the button
+    $btnset_restore.Enabled = $false;
+    $btnset_selected.Enabled = $false;
+    $global:backup_proc.EnableRaisingEvents = $true;
+
+    $global:backup_timer = New-Object System.Windows.Forms.Timer;
+    $global:backup_timer.Interval = 500;
+    $global:backup_timer.add_tick({
+        handle_backup_timer | Out-Null;
+    });
+    $global:backup_timer.Start();
+    return ;
+});
 
 
 

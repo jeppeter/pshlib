@@ -30,7 +30,7 @@ function remove_dir($dir)
 {
     $retval=0;
     $olderror = _copy_error -v $Error;
-    if (Test-Path -Path $dir) {
+    if ((Test-Path -Path $dir)) {
         # if the directory exists
         $Error.clear();
         Remove-Item  $dir -ErrorAction SilentlyContinue -Recurse -Force;
@@ -48,11 +48,8 @@ function make_dir_safe($dir)
 {
     $ret = 0;
     $olderror = _copy_error -v $Error;
-    if (Test-Path -Path $dir) {
-        $retval = remove_dir -dir $dir;
-        if ($retval -ne 0) {
-            return $retval;
-        }
+    if ((Test-Path -Path $dir -PathType  container)) {
+        return 0;
     }
     $Error.clear();
     $n = New-Item  -ItemType "directory" -Path $dir -ErrorAction SilentlyContinue;
@@ -99,7 +96,7 @@ function copy_dir_recur($basedir,$curitem,$newargv)
     }
     #$c = ($curitem | Format-List | Out-String);
     #write_stdout -msg $c;
-    if (-Not (Test-Path -Path $newargv)) {
+    if (-Not (Test-Path -Path $newargv -PathType container)) {
         $retval = make_dir_safe -dir $newargv;
         if ($retval -ne 0) {
             return -1;
@@ -124,6 +121,7 @@ function copy_dir_recur($basedir,$curitem,$newargv)
         if ($retval -lt 0) {
             return $retval;
         }
+        $cnt += $retval;
     } else {
         write_stdout -msg "[$wholepath] is not dir newargv[$newargv]";
         $srcfile = Join-Path -Path $basedir -ChildPath $name;

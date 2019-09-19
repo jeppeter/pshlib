@@ -245,8 +245,11 @@ if ($errorcode -ne 0) {
 }
 
 if ($errorcode -ne 0) {    
-    [Environment]::Exit($errorcode);
+    [Environment]::Exit(3);
 }
 
 write_stdout -msg "diffed [$diffed]";
-[Environment]::Exit($diffed);
+if ($diffed) {
+    [Environment]::Exit(25);    
+}
+[Environment]::Exit(0);
