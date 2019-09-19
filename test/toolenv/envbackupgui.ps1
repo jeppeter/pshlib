@@ -141,6 +141,9 @@ $mainfrm.Text = "idvtools 1.0";
 $mainfrm.Name = "mainframe";
 $mainfrm.DataBindings.DefaultDataSourceUpdateMode = 0;
 
+$iconfile = ("{0}\envbackup.ico" -f (get_current_file_dir));
+$mainfrm.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($iconfile);
+
 
 $maintabctrl = New-object System.Windows.Forms.TabControl;
 $syspage = New-Object System.Windows.Forms.TabPage;
