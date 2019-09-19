@@ -2,18 +2,24 @@
 
 function write_stderr($msg)
 {
-    [Console]::Error.WriteLine.Invoke($msg);
+    $line = $MyInvocation.ScriptLineNumber;
+    $file = $MyInvocation.ScriptName;
+    $newmsg = ("[{0}:{1}]:$msg" -f $file,$line);
+    [Console]::Error.WriteLine.Invoke($newmsg);
     if (-Not [string]::IsNullOrEmpty($FileAppend)) {
-        $msg | Out-File -FilePath $FileAppend -Append -ErrorAction SilentlyContinue ;
+        $newmsg | Out-File -FilePath $FileAppend -Append -ErrorAction SilentlyContinue ;
     }
     return;
 }
 
 function write_stdout($msg)
 {
-    [Console]::Out.WriteLine.Invoke($msg);
+    $line = $MyInvocation.ScriptLineNumber;
+    $file = $MyInvocation.ScriptName;
+    $newmsg = ("[{0}:{1}]:$msg" -f $file,$line);
+    [Console]::Out.WriteLine.Invoke($newmsg);
     if (-Not [string]::IsNullOrEmpty($FileAppend)) {
-        $msg | Out-File -FilePath $FileAppend -Append -ErrorAction SilentlyContinue ;
+        $newmsg | Out-File -FilePath $FileAppend -Append -ErrorAction SilentlyContinue ;
     }
     return;
 }
@@ -99,6 +105,7 @@ function copy_dir_recur($basedir,$curitem,$newargv)
     if (-Not (Test-Path -Path $newargv -PathType container)) {
         $retval = make_dir_safe -dir $newargv;
         if ($retval -ne 0) {
+            write_stderr -msg " ";
             return -1;
         }
         $cnt ++;
@@ -119,6 +126,7 @@ function copy_dir_recur($basedir,$curitem,$newargv)
         $newdir = Join-Path -Path $newargv -ChildPath $name;
         $retval = handle_directory_callback ${function:\copy_dir_recur} -dir $wholepath -argv  $newdir;
         if ($retval -lt 0) {
+            write_stderr -msg " ";
             return $retval;
         }
         $cnt += $retval;
@@ -155,7 +163,8 @@ function handle_directory_callback($function,$dir,$argv)
 
     foreach($i in $items) {
         $ret = Invoke-Command $function -ArgumentList $dir,$i,$argv;
-        if ($ret -lt 0) {            
+        if ($ret -lt 0) {
+            write_stderr -msg " ";
             return $ret;
         }
         $cnt += $ret;
@@ -168,11 +177,13 @@ function handle_directory_callback($function,$dir,$argv)
 function copy_dir_top($srcdir,$dstdir)
 {
     if (-Not (Test-Path -Path $srcdir -PathType Container)) {
+        write_stderr -msg " ";
         return -1;
     }
     if (-Not (Test-Path -Path $dstdir -PathType Container)) {
         $retval = make_dir_safe -dir $dstdir;
         if ($retval -ne 0) {
+            write_stderr -msg " ";
             return -2;
         }
     }

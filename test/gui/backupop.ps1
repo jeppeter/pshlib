@@ -304,6 +304,7 @@ function backup_directory($keyname,$newdir,$copied,$removed)
         return -2;
     }
 
+    write_stdout -msg " ";
 
     $shellval = get_shell_folder_value -keyname $keyname;
     $vn = _get_shell_value_keyname -keyname $keyname;
@@ -311,12 +312,14 @@ function backup_directory($keyname,$newdir,$copied,$removed)
     $vn = _get_shellval_setted_keyname -keyname $keyname;
     set_value_global -varname $vn -varvalue "1";
 
+    write_stdout -msg " ";
     $vn = _get_usershellval_setted_keyname -keyname $keyname;
     $v = get_value_global -varname $vn;
     if (-Not [string]::IsNullOrEmpty($v)) {
         write_stderr -msg "[$keyname] has already done";
         return -2;
     }
+    write_stdout -msg " ";
 
     $usershellval = get_user_shell_folder_value -keyname $keyname;
     $vn = _get_usershell_value_keyname -keyname $keyname;
@@ -324,6 +327,7 @@ function backup_directory($keyname,$newdir,$copied,$removed)
     $vn = _get_usershellval_setted_keyname -keyname $keyname;
     set_value_global -varname $vn =varvalue "1";
 
+    write_stdout -msg " ";
 
     $exshellval = "";
 
@@ -341,14 +345,17 @@ function backup_directory($keyname,$newdir,$copied,$removed)
     }
 
 
+    write_stdout -msg " ";
     # now we should copy the directory
     if ([string]::IsNullOrEmpty($exshellval)) {
-        $retval = make_dir_safe -dir $newdir;        
+        $retval = make_dir_safe -dir $newdir;
         if ($retval -ne 0) {
+            write_stderr -msg " ";
             return -3;
         }
         $retval = add_task_keyname_empty -keyname $keyname;
         if ($retval -lt 0) {
+            write_stderr -msg " ";
             return $retval;
         }
         $diffed = 1;
@@ -357,6 +364,7 @@ function backup_directory($keyname,$newdir,$copied,$removed)
             if ($copied) {
                 $retval = copy_dir_top -srcdir $exshellval -dstdir $newdir;
                 if ($retval -lt 0) {
+                    write_stderr -msg " ";
                     return -3;
                 }                
             }
@@ -367,12 +375,14 @@ function backup_directory($keyname,$newdir,$copied,$removed)
                 $retval = add_task_keyname_empty -keyname $keyname;
             }
             if ($retval -lt 0) {
+                write_stderr -msg " ";
                 return $retval;
             }
 
             $diffed = 1;
         }        
     }
+    write_stdout -msg " ";
 
     if ($diffed) {
         $vn = _get_newdir_keyname -keyname $keyname;
@@ -390,6 +400,7 @@ function backup_directory($keyname,$newdir,$copied,$removed)
             }
         }
     }
+    write_stdout -msg " ";
 
     return $diffed;
 }

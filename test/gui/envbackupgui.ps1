@@ -555,7 +555,7 @@ function handle_backup_exited()
         write_stdout -msg "retval [$retval]";
         if ($retval -eq "OK") {
             $global:backup_proc = $null;
-            $v = Start-Process -Wait -FilePath "shutdown.exe" -ArgumentList "/l /t 0";
+            $v = Start-Process -Wait -FilePath "shutdown.exe" -ArgumentList "/l";
             return;
         }
     } else {
@@ -659,7 +659,6 @@ $btnset_selected.Add_Click({
     $cmdargs += (get_chkbox_param -chkbox $chkbox_copyfile -paramname "CopyFiles");
     $cmdargs += (get_chkbox_param -chkbox $chkbox_regsetted -paramname "RegSetted");
 
-    $cmdargs += " -FileAppend pslog.txt";
 
     write_stdout -msg "call command [$cmd][$cmdargs]";
 
