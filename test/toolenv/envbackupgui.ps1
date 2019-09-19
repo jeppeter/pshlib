@@ -755,7 +755,6 @@ $btnset_restore.Add_Click({
     $cmdargs += (get_chkbox_param -chkbox $chkbox_copyfile -paramname "CopyFiles");
     $cmdargs += (get_chkbox_param -chkbox $chkbox_regsetted -paramname "RegSetted");
 
-    $cmdargs += " -FileAppend pslog.txt";
 
     write_stdout -msg "call command [$cmd][$cmdargs]";
 
