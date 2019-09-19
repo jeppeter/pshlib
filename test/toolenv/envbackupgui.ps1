@@ -143,7 +143,8 @@ $mainfrm.DataBindings.DefaultDataSourceUpdateMode = 0;
 
 $iconfile = ("{0}\envbackup.ico" -f (get_current_file_dir));
 $mainfrm.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($iconfile);
-
+$mainfrm.MaximizeBox = $false;
+$mainfrm.FormBorderStyle = 'Fixed3D';
 
 $maintabctrl = New-object System.Windows.Forms.TabControl;
 $syspage = New-Object System.Windows.Forms.TabPage;
