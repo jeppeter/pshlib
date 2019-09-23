@@ -8,7 +8,7 @@ function _my_file_name()
 
 function get_current_file_dir()
 {
-# Determine script location for PowerShell
+    # Determine script location for PowerShell
     $curpath = _my_file_name;
     return Split-Path $curpath;
 }
