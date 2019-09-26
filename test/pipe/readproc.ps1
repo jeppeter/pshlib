@@ -2,15 +2,16 @@ Param($cc);
 
 Function Execute-Command ($commandTitle, $commandPath, $commandArguments)
 {
-    $pinfo = New-Object System.Diagnostics.ProcessStartInfo
-    $pinfo.FileName = $commandPath
-    $pinfo.RedirectStandardError = $true
-    $pinfo.RedirectStandardOutput = $true
-    $pinfo.UseShellExecute = $false
-    $pinfo.Arguments = $commandArguments
-    $p = New-Object System.Diagnostics.Process
-    $p.StartInfo = $pinfo
-    $p.Start() | Out-Null
+    $pinfo = New-Object System.Diagnostics.ProcessStartInfo;
+    $pinfo.FileName = $commandPath;
+    $pinfo.RedirectStandardError = $true;
+    $pinfo.RedirectStandardOutput = $true;
+    $pinfo.UseShellExecute = $false;
+    $pinfo.Arguments = $commandArguments;
+    $pinfo.CreateNoWindow = $true;
+    $p = New-Object System.Diagnostics.Process ;
+    $p.StartInfo = $pinfo;
+    $p.Start() | Out-Null;
     return $p;
 }
 #    $p.WaitForExit()
@@ -22,7 +23,7 @@ Function Execute-Command ($commandTitle, $commandPath, $commandArguments)
 #    }
 
 
-$p = Execute-Command -commandTitle "title" -commandPath "powershell.exe" -commandArguments "-Command `"Write-Host -NoNewLine `\`"$cc\`";`"";
+$p = Execute-Command -commandTitle "title" -commandPath "powershell.exe" -commandArguments "-Command `"Write-Host -NoNewLine `\`"$cc\`"; $l = $cc.Length; [Environment]::Exit(10);`"";
 Write-Host "get stdout "$p.stdout;
 $cnt =0;
 
@@ -36,4 +37,5 @@ While(1) {
 }
 
 $out = $p.StandardOutput.ReadToEnd();
-Write-Host "read [$out]";
+$exitcode = $p.ExitCode;
+Write-Host "read [$out] [$exitcode]";
