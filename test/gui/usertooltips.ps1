@@ -37,7 +37,7 @@ $mainfrm.maximumSize = New-Object System.Drawing.Size($Width,$Height);
 
 
 $label = New-Object System.Windows.Forms.Label;
-$labeltext = "$([char]0x63d0)$([char]0x793a)$([char]0x63d0)$([char]0x793a)$([char]0x63d0)$([char]0x793a)$([char]0x63d0)$([char]0x793a)$([char]0x63d0)$([char]0x793a)$([char]0x63d0)$([char]0x793a)";
+$labeltext = "%s";
 $label = set_control_size_point -ctrl $label -x 0 -y 0 -w ($Width - 20) -h ($Height - 20) -Text $labeltext;
 $label.TextAlign = "MiddleCenter";
 
