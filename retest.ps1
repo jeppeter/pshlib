@@ -18,6 +18,15 @@ function findall
     return;
 }
 
+function replace_regex
+{
+    Param([string]$restr,[string]$replacestr,[string]$instr);
+    Write-Host "instr [$instr] restr [$restr] replacestr [$replacestr]";
+    $retstr = $instr -replace $restr,$replacestr;
+    Write-Host "[$instr] [$restr] / [$replacestr] => [$retstr]";
+    return $retstr;
+}
+
 function usage
 {
     Param([int]$exitcode,[string]$fmt);
@@ -28,6 +37,7 @@ function usage
     Write-Host "[COMMAND]:";
     Write-Host "    match   restr instr ...      to make match";
     Write-Host "    findall restr instr ...      to make findall";
+    Write-Host "    replace restr replacestr instr ... to replace";
     exit($exitcode);
 }
 
@@ -52,6 +62,15 @@ if ($cmd.equals("match")) {
     $restr = $args[1];
     for($i=2;$i -lt $args.count;$i++) {
         findall -restr $restr -instr $args[$i];
+    }
+}  elseif ($cmd.equals("replace")) {
+    if ($args.count -lt 4) {
+        usage -exitcode 3 -fmt "replace need at least 4 params";
+    }
+    $restr = $args[1];
+    $replacestr = $args[2];
+    for ($i=3;$i -lt $args.count;$i++) {
+        $v = replace_regex -restr $restr -replacestr $replacestr -instr $args[$i];
     }
 } else {
     usage -exitcode 4 -fmt "unknown command ["+ $cmd +"]";
